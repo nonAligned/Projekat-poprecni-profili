@@ -170,6 +170,13 @@
   )
 )
 
+(defun SplitStr ( s d / p )
+  (if (setq p (vl-string-search d s))
+    (cons (substr s 1 p) (SplitStr (substr s (+ p 1 (strlen d))) d))
+    (list s)
+  )
+)
+
 ; -------------------------------
 ; CROSS SECTION FUNCTIONS
 ; -------------------------------
@@ -240,11 +247,16 @@
   (setq axisPointFirst (strcat (rtos (* 21.0 scale) 2) "," (rtos (* 13.75 scale) 2)))
   (setq axisPointSecond (strcat (rtos (* 28.7 scale) 2) "," (rtos (* 12.25 scale) 2)))
   
-  (WriteDText "Poprecni profil" "BL" bottomLeft (* 0.25 scale) 0 "ППК-1" "01-Tekst")
+  (WriteDText "Poprecni profil" "BL" bottomLeft (* 0.25 scale) 0 (GenerateId) "01-Tekst")
   (WriteDText "Poprecni profil" "TL" topLeft (* 0.25 scale) 0 "ЈП \"Урбанизам\" Завод за урбанизам, 21 000 Нови Сад, Бул. цара Лазара бр.3/III" "01-Tekst")
   (WriteMText "Poprecni profil" "TC" titleFirst titleSecond (* 0.5 scale) "КАРАКТЕРИСТИЧНИ ПОПРЕЧНИ ПРОФИЛ" "01-Tekst")
   (WriteMText "Poprecni profil" "TC" subtitleFirst subtitleSecond (* 0.35 scale) (strcat "Улица " streetName " " (rtos width 2 1) " m") "01-Tekst")
   (WriteMText "Poprecni profil" "MC" axisPointFirst axisPointSecond (* 0.25 scale) (strcat "од ОТ " axisPoint1 " до ОТ " axisPoint2) "01-Tekst")
+)
+
+(defun GenerateId( / cdate)
+  (setq cdate (SplitStr (rtos (getvar "CDATE") 2) "."))
+  (strcat (strcase (substr (getvar "USERNAME") 1 2)) "-" (substr (car cdate) 3) (cadr cdate) "-" (substr (rtos (getvar "MILLISECS") 2 0) 2 4))
 )
 
 ; -------------------------------
