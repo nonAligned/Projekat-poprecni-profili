@@ -146,6 +146,30 @@
   (command "_DIMSTYLE" "SAVE" dimStyleName "YES")
 )
 
+(defun WriteDText(style justify insertPoint height rotation content layer)
+  (command "._LAYER" "SET" layer "")
+  (command "._TEXT"
+    "STYLE" style
+    "JUSTIFY" justify
+    insertPoint height rotation
+    content
+  )
+)
+
+(defun WriteMText(style justify firstPoint secondPoint height content layer)
+  (command "._LAYER" "SET" layer "")
+  (command 
+    "_.MTEXT"
+    firstPoint
+    "_Justify" justify 
+    "_Style" style
+    "_Height" height 
+    secondPoint
+    content
+    ""
+  )
+)
+
 ; -------------------------------
 ; CROSS SECTION FUNCTIONS
 ; -------------------------------
@@ -194,7 +218,7 @@
   (SetDimScale "Poprecni profil" scale)
 )
 
-(defun DrawFrame (paperScale / outerFirst outerSecond innerFirst innerSecond)
+(defun DrawFrame ( / outerFirst outerSecond innerFirst innerSecond)
   (setq outerFirst "0,0")
   (setq outerSecond (strcat (rtos (* 29.7 scale) 2) "," (rtos (* 21.0 scale) 2)))
   (setq innerFirst (strcat (rtos (* 0.5 scale) 2) "," (rtos (* 0.5 scale) 2)))
@@ -204,6 +228,23 @@
   (DrawRectangle innerFirst innerSecond (* 0.05 scale) "00-Okvir")
 
   (ZoomAndRegen)
+)
+
+(defun WriteText ( / bottomLeft topLeft titleFirst titleSecond subtitleFirst subtitleSecond axisPointFirst axisPointSecond)
+  (setq bottomLeft (strcat (rtos (* 0.75 scale) 2) "," (rtos (* 0.75 scale) 2)))
+  (setq topLeft (strcat (rtos (* 0.75 scale) 2) "," (rtos (* 18.25 scale) 2)))
+  (setq titleFirst (strcat (rtos (* 21.00 scale) 2) "," (rtos (* 18.0 scale) 2)))
+  (setq titleSecond (strcat (rtos (* 28.7 scale) 2) "," (rtos (* 16.0 scale) 2)))
+  (setq subtitleFirst (strcat (rtos (* 21.0 scale) 2) "," (rtos (* 15.75 scale) 2)))
+  (setq subtitleSecond (strcat (rtos (* 28.7 scale) 2) "," (rtos (* 13.75 scale) 2)))
+  (setq axisPointFirst (strcat (rtos (* 21.0 scale) 2) "," (rtos (* 13.75 scale) 2)))
+  (setq axisPointSecond (strcat (rtos (* 28.7 scale) 2) "," (rtos (* 12.25 scale) 2)))
+  
+  (WriteDText "Poprecni profil" "BL" bottomLeft (* 0.25 scale) 0 "ППК-1" "01-Tekst")
+  (WriteDText "Poprecni profil" "TL" topLeft (* 0.25 scale) 0 "ЈП \"Урбанизам\" Завод за урбанизам, 21 000 Нови Сад, Бул. цара Лазара бр.3/III" "01-Tekst")
+  (WriteMText "Poprecni profil" "TC" titleFirst titleSecond (* 0.5 scale) "КАРАКТЕРИСТИЧНИ ПОПРЕЧНИ ПРОФИЛ" "01-Tekst")
+  (WriteMText "Poprecni profil" "TC" subtitleFirst subtitleSecond (* 0.35 scale) (strcat "Улица " streetName " " (rtos width 2 1) " m") "01-Tekst")
+  (WriteMText "Poprecni profil" "MC" axisPointFirst axisPointSecond (* 0.25 scale) (strcat "од ОТ " axisPoint1 " до ОТ " axisPoint2) "01-Tekst")
 )
 
 ; -------------------------------
@@ -223,7 +264,8 @@
   )
   
   (ImportInitialStyles)
-  (DrawFrame scale)
+  (DrawFrame)
+  (WriteText)
 )
 
 ; -------------------------------
