@@ -25,15 +25,18 @@ newcstype2: dialog {
       : edit_box { 
         label = "*Naziv ulice:";
         key = "street-name";
+        action = "(setq streetName $value)";
       }
       : edit_box { 
         label = "*Rastojanje leva regulacija-osa (m):";
         key = "axis-distance-left";
+        action = "(setq axisDistanceLeft $value)";
         edit_width = 4;
       }
       : edit_box { 
         label = "*Rastojanje desna regulacija-osa (m):";
         key = "axis-distance-right";
+        action = "(setq axisDistanceRight $value)";
         edit_width = 4;
       }   
   }
@@ -43,6 +46,7 @@ newcstype2: dialog {
     : edit_box { 
       label = "*Orijentacija profila (desno):";
       key = "street-orientation";
+      action = "(setq streetOrientation $value)";
     }
     : column {
       alignment = left;
@@ -50,11 +54,13 @@ newcstype2: dialog {
       : edit_box { 
         label = "Od tacke:";
         key = "axis-point-1";
+        action = "(setq axisPoint1 $value)";
         edit_width = 4;
       }
       : edit_box { 
         label = "Do tacke:";
         key = "axis-point-2";
+        action = "(setq axisPoint2 $value)";
         edit_width = 4;
       } 
     }
