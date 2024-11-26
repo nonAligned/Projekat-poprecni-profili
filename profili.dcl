@@ -61,7 +61,7 @@ newcstype2: dialog {
   }
 
   : text {
-    value = "* - Obavezno polje";
+    value = "* Obavezno polje";
   }
 
   spacer;
