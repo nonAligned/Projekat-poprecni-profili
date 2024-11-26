@@ -92,6 +92,15 @@
 ; Utility Functions
 ; -------------------------------
 
+  (defun Cleanup()
+    (command "_.ERASE" "ALL" "")
+    (command "_.PURGE" "ALL" "*" "N")
+  )
+
+  (defun ZoomAndRegen()
+    (command "_.ZOOM" "E")
+    (command "_.REGEN")
+  )
 
 ; -------------------------------
 ; Cross Section Type 2 Functions
