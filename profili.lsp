@@ -131,6 +131,15 @@
   )
 )
 
+(defun DrawRectangle(firstPoint secondPoint lineWidth layer)
+  (command "._LAYER" "SET" layer "")
+  (command "._RECTANG" 
+    "WIDTH" (rtos lineWidth 2)
+    firstPoint
+    secondPoint
+  )
+)
+
 (defun SetDimScale(dimStyleName newScale)
   (command "._DIMSTYLE" "RESTORE" dimStyleName)
   (setvar 'DIMSCALE newScale)
@@ -185,6 +194,18 @@
   (SetDimScale "Poprecni profil" scale)
 )
 
+(defun DrawFrame (paperScale / outerFirst outerSecond innerFirst innerSecond)
+  (setq outerFirst "0,0")
+  (setq outerSecond (strcat (rtos (* 29.7 scale) 2) "," (rtos (* 21.0 scale) 2)))
+  (setq innerFirst (strcat (rtos (* 0.5 scale) 2) "," (rtos (* 0.5 scale) 2)))
+  (setq innerSecond (strcat (rtos (* 29.2 scale) 2) "," (rtos (* 18.5 scale) 2)))
+  
+  (DrawRectangle outerFirst outerSecond 0 "00-Okvir")
+  (DrawRectangle innerFirst innerSecond (* 0.05 scale) "00-Okvir")
+
+  (ZoomAndRegen)
+)
+
 ; -------------------------------
 ; Cross Section Type 2 Entry Point
 ; -------------------------------
@@ -202,7 +223,7 @@
   )
   
   (ImportInitialStyles)
-  
+  (DrawFrame scale)
 )
 
 ; -------------------------------
