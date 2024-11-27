@@ -217,6 +217,12 @@
   (DrawPline leftEndpoint rightEndpoint (* 0.05 scale) 1 "03-Tlo")
 )
 
+(defun DrawAxis(bottomY topY x / bottomPoint topPoint)
+  (setq bottomPoint (strcat (rtos x 2) "," (rtos bottomY 2)))
+  (setq topPoint (strcat (rtos x 2) "," (rtos topY 2)))
+  (DrawPline bottomPoint topPoint (* 0.015 scale) (* 0.025 scale) "05-Osovina")
+)
+
 ; -------------------------------
 ; Cross Section Type 2 Main Workflow
 ; -------------------------------
@@ -283,20 +289,19 @@
 
 (defun DrawCrossSection ( / groundX groundY upperMaxY lowerMaxY leftX rightX axisX upperDimsY lowerDimsY dimSpacing lowerDimsLeftList lowerDimsRightList)
   (setq groundX (* 10.75 scale))
-  (setq groundY (* 7.5 scale))
-  (setq upperMaxY (* 11.5 scale))
-  (setq lowerMaxY (* 3.5 scale))
+  (setq groundY (* 8.0 scale))
+  (setq upperMaxY (+ groundY (* 4.0 scale)))
+  (setq lowerMaxY (- groundY (* 4.0 scale)))
   (setq leftX (- groundX (/ width 2)))
   (setq rightX (+ groundX (/ width 2)))
   (setq axisX (+ leftX (atof axisDistanceLeft)))
-  ;(setq cs-left (strcat (rtos left-x 2) "," (rtos mid-y 2)))
-  ;(setq cs-right (strcat (rtos right-x 2) "," (rtos mid-y 2)))
   (setq upperDimsY (+ groundY (* 8.5 scale)))
   (setq lowerDimsY (- groundY (* 5.5 scale)))
   (setq dimSpacing (* (getvar 'DIMDLI) scale))
   
   
   (DrawGround leftX rightX groundY)
+  (DrawAxis lowerMaxY upperMaxY axisX)
 
 )
 
