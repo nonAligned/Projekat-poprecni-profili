@@ -237,6 +237,12 @@
   
 )
 
+(defun InsertOrientation(blockX blockY textX textY / textInsertPoint)
+  (setq textInsertPoint (strcat (rtos textX 2) "," (rtos textY 2)))
+  (InsertBlock "PP-Orijentacija" "01-Tekst" blockX blockY scale "0")
+  (WriteDText "Poprecni profil" "BC" textInsertPoint (* 0.2 scale) "0" (strcase streetOrientation) "01-Tekst")
+)
+
 ; -------------------------------
 ; Cross Section Type 2 Main Workflow
 ; -------------------------------
@@ -317,6 +323,7 @@
   (DrawGround leftX rightX groundY)
   (DrawAxis lowerMaxY upperMaxY axisX)
   (DrawRegLines leftX rightX lowerMaxY groundY upperMaxY)
+  (InsertOrientation rightX (+ upperMaxY 0.5) (+ rightX scale) (+ upperMaxY 0.75))
 )
 
 ; -------------------------------
