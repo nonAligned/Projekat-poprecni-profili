@@ -189,6 +189,20 @@
   )
 )
 
+(defun AddLinDim(dimX1 dimX2 dimY posY dimStyleName layerName)
+  (command "._LAYER" "SET" layer "")
+  (command "._DIMSTYLE" "RESTORE" dimStyleName)
+  
+  (command
+    "._DIMLINEAR"
+    (strcat (rtos dimX1 2) "," (rtos dimY 2))
+    (strcat (rtos dimX2 2) "," (rtos dimY 2))
+    (strcat (rtos dimX1 2) "," (rtos posY 2))
+  )
+  
+  (command "._LAYER" "SET" "0" "")
+)
+
 ; -------------------------------
 ; CROSS SECTION FUNCTIONS
 ; -------------------------------
@@ -241,6 +255,12 @@
   (setq textInsertPoint (strcat (rtos textX 2) "," (rtos textY 2)))
   (InsertBlock "PP-Orijentacija" "01-Tekst" blockX blockY scale "0")
   (WriteDText "Poprecni profil" "BC" textInsertPoint (* 0.2 scale) "0" (strcase streetOrientation) "01-Tekst")
+)
+
+(defun AddInitialDims(left right mid axis maxYPosition spacing)
+  (AddLinDim left right mid maxYPosition "Poprecni profil" "30-Kote saobracaj")
+  (AddLinDim left axis mid (- maxYPosition spacing) "Poprecni profil" "30-Kote saobracaj")
+  (AddLinDim axis right mid (- maxYPosition spacing) "Poprecni profil" "30-Kote saobracaj")
 )
 
 ; -------------------------------
@@ -324,6 +344,9 @@
   (DrawAxis lowerMaxY upperMaxY axisX)
   (DrawRegLines leftX rightX lowerMaxY groundY upperMaxY)
   (InsertOrientation rightX (+ upperMaxY 0.5) (+ rightX scale) (+ upperMaxY 0.75))
+  (AddInitialDims leftX rightX groundY axisX upperDimsY dimSpacing)
+  
+  (ZoomAndRegen)
 )
 
 ; -------------------------------
