@@ -327,6 +327,12 @@
   (LoadDialog "newcstype2")
   
   (setq width (+ (atof axisDistanceLeft) (atof axisDistanceRight)))
+  (if (equal axisPoint1 "")
+    (setq axisPoint1 "00000")
+  )
+  (if (equal axisPoint2 "")
+    (setq axisPoint2 "00000")
+  )
   
   (cond
     ((<= width 18.0) (setq scale 1.0))
