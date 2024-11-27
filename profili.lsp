@@ -333,10 +333,10 @@
       (AddAxisRoad (atof widthLeft) (atof widthRight))
     )
     ((equal roadType "single-road")
-      (setvar 'OSMODE OSNAP-SETTINGS)
-      (setq firstPoint (car (getpoint "\nPokazite prvu tacku kolovoz:")))
-      (setq secondPoint (car (getpoint "\nPokazite drugu tacku kolovoz:")))
-      (setvar 'OSMODE 0)
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (setq firstPoint (car (getpoint "\nPokazite prvu tacku kolovoza:")))
+      (setq secondPoint (car (getpoint "\nPokazite drugu tacku kolovoza:")))
+      (setvar "OSMODE" 0)
       (if (= firstPoint secondPoint)
         (alert "Tacke moraju biti razlicite!")
         (AddSingleRoad firstPoint secondPoint)
@@ -505,8 +505,8 @@
     )
   )
   
-  (setq OSNAPSETTINGS (getvar 'OSMODE))
-  (setvar 'OSMODE 0)
+  (setq OSNAPSETTINGS (getvar "OSMODE"))
+  (setvar "OSMODE" 0)
   
   (LoadDialog "newcrosssection")
 	
@@ -522,7 +522,7 @@
     )
   )
   
-  (setvar 'OSMODE OSNAPSETTINGS)
+  (setvar "OSMODE" OSNAPSETTINGS)
   
   (princ) ; Suppress return of extraneous results
 )
