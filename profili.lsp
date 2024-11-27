@@ -282,6 +282,26 @@
   (AddLinDim axis right mid (- maxYPosition spacing) "Poprecni profil" "30-Kote saobracaj")
 )
 
+(defun AddTrafficDims(x1 x2 posY dimType dimLine)
+  (cond
+    ((equal dimLine 4)
+      (if (or (and (< x1 axisX)(> x2 axisX))(and (< x2 axisX)(> x1 axisX)))
+      (progn
+        (AddLinDim x1 axisX groundY posY dimType "30-Kote saobracaj")
+        (AddLinDim axisX x2 groundY posY dimType "30-Kote saobracaj")
+      )
+      (AddLinDim x1 x2 groundY posY dimType "30-Kote saobracaj")
+      )  
+    )
+    ((equal dimLine 3)
+      (AddLinDim leftX x1 groundY posY "Poprecni profil priblizno" "30-Kote saobracaj")
+      (AddLinDim x1 x2 groundY posY "Poprecni profil" "30-Kote saobracaj")
+      (AddLinDim x2 rightX groundY posY "Poprecni profil priblizno" "30-Kote saobracaj")
+    )
+  )
+  
+)
+
 ; -------------------------------
 ; Traffic Elements Functions
 ; -------------------------------
@@ -298,7 +318,7 @@
       (setdynpropvalue vlaObj "sirina desno" width)
     )
     (progn
-      (setq width (- secondPoint firstPoint))
+      (setq width (- firstPoint secondPoint))
       (setdynpropvalue vlaObj "sirina levo" width)
       (setdynpropvalue vlaObj "sirina desno" 0)
     )
@@ -308,6 +328,8 @@
   (vla-update vlaObj)
   
   (vlax-release-object vlaObj)
+
+  (AddTrafficDims firstPoint secondPoint (- upperDimsY (* dimSpacing 3.0)) "Popercni profil")
 )
 
 (defun AddAxisRoad (widthLeft widthRight / vlaObj)
@@ -322,6 +344,9 @@
   (vla-update vlaObj)
   
   (vlax-release-object vlaObj)
+
+  (AddTrafficDims (- axisX widthLeft) (+ axisX widthRight) (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
+  (AddTrafficDims (- axisX widthLeft) (+ axisX widthRight) (- upperDimsY (* dimSpacing 2.0)) "Poprecni profil" 3)
 )
 
 (defun AddRoadway( / roadType widthLeft widthRight firstPoint secondPoint)
@@ -330,7 +355,14 @@
   (cond
     ((equal roadType "axis-road")
       (LoadDialog "newaxisroad")
-      (AddAxisRoad (atof widthLeft) (atof widthRight))
+      (if (and (not widthLeft)(not widthRight))
+        (alert "Morate uneti bar jedno rastojanje od ose!")
+        (progn
+          (if (not widthLeft)(setq widthLeft "0"))
+          (if (not widthLeft)(setq widthRight "0"))
+          (AddAxisRoad (atof widthLeft) (atof widthRight))
+        )
+      )
     )
     ((equal roadType "single-road")
       (setvar "OSMODE" OSNAPSETTINGS)
