@@ -223,6 +223,20 @@
   (DrawPline bottomPoint topPoint (* 0.015 scale) (* 0.025 scale) "05-Osovina")
 )
 
+(defun DrawRegLines(leftX rightX bottomY midY topY / leftLineBottomPoint leftLineTopPoint rightLineBottomPoint rightLineTopPoint)
+  (setq leftLineBottomPoint (strcat (rtos leftX 2) "," (rtos bottomY 2)))
+  (setq leftLineTopPoint (strcat (rtos leftX 2) "," (rtos topY 2)))
+  (setq rightLineBottomPoint (strcat (rtos rightX 2) "," (rtos bottomY 2)))
+  (setq rightLineTopPoint (strcat (rtos rightX 2) "," (rtos topY 2)))
+  
+  (DrawPline leftLineBottomPoint leftLineTopPoint (* 0.03 scale) (* 0.05 scale) "04-Regulacija")
+  (DrawPline rightLineBottomPoint rightLineTopPoint (* 0.03 scale) (* 0.05 scale) "04-Regulacija")
+  
+  (WriteDText "Poprecni profil" "BC" (strcat (rtos (- leftX 0.1) 2) "," (rtos midY 2)) (* 0.2 scale) "90" "РЕГУЛАЦИОНА ЛИНИЈА" "01-Tekst")
+  (WriteDText "Poprecni profil" "TC" (strcat (rtos (+ rightX 0.15) 2) "," (rtos midY 2)) (* 0.2 scale) "90" "РЕГУЛАЦИОНА ЛИНИЈА" "01-Tekst")
+  
+)
+
 ; -------------------------------
 ; Cross Section Type 2 Main Workflow
 ; -------------------------------
@@ -302,7 +316,7 @@
   
   (DrawGround leftX rightX groundY)
   (DrawAxis lowerMaxY upperMaxY axisX)
-
+  (DrawRegLines leftX rightX lowerMaxY groundY upperMaxY)
 )
 
 ; -------------------------------
