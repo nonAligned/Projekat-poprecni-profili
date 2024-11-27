@@ -76,3 +76,81 @@ newcstype2: dialog {
 
   errtile;
 }
+
+newtrafficelement: dialog {
+  label = "Dodavanje saobracajnih elementa";
+  : boxed_column {
+    : button { 
+      label = "Dodaj kolovoz";
+      key = "roadway";
+      action = "(setq elementType \"roadway\")(done_dialog 1)";
+    }
+    : button { 
+      label = "Dodaj trotoar";
+      key = "sidewalk";
+      action = "(setq elementType \"sidewalk\")(done_dialog 1)";     
+    }
+    : button { 
+      label = "Dodaj biciklisticku stazu";
+      key = "bikepath";
+      action = "(setq elementType \"bikepath\")(done_dialog 1)";
+    }
+    : button { 
+      label = "Dodaj parking";
+      key = "parking";
+      action = "(setq elementType \"parking\")(done_dialog 1)";
+    }
+    : button { 
+      label = "Dodaj zelenilo";
+      key = "green";
+      action = "(setq elementType \"green\")(done_dialog 1)";
+    }
+  }
+
+  spacer;
+
+  ok_cancel;
+}
+
+newroadway: dialog {
+  label = "Dodajte novi kolovoz";
+  : button { 
+    key = "axis-road";
+    label = "Kolovoz u osi";
+    action = "(setq roadType \"axis-road\")(done_dialog 1)";
+  }
+  : button { 
+    key = "single-road";
+    label = "Pojedinacni kolovoz";
+    action = "(setq roadType \"single-road\")(done_dialog 1)";
+  }
+  
+  spacer;
+
+  ok_cancel;
+
+}
+
+newaxisroad: dialog {
+  label = "Novi kolovoz u osi";
+  : boxed_column {
+    : edit_box { 
+      key = "width-left";
+      value = "";
+      label = "Sirina levo od ose (m):";
+      action = "(setq widthLeft $value)";
+      edit_width = 4;
+    }
+    : edit_box { 
+      key = "width-right";
+      value = "";
+      label = "Sirina desno od ose (m):";
+      action = "(setq widthRight $value)";
+      edit_width = 4;
+    }
+  }
+
+  spacer;
+
+  ok_cancel;
+}

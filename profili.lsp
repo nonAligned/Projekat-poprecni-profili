@@ -19,6 +19,10 @@
             ((equal dialogName "newcstype2")
               (action_tile "accept" "(TestDialog)")
             )
+            ((equal dialogName "newtrafficelement")
+              (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
+              (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
+            )
           )
           
 	        (start_dialog)
@@ -128,6 +132,21 @@
       (strcat (rtos iX 2) "," (rtos iY 2))
       blockScale blockScale blockRotation
     )
+  )
+)
+
+(defun SetDynPropValue ( blk prp val )
+  (setq prp (strcase prp))
+  (vl-some
+      '(lambda ( x )
+          (if (= prp (strcase (vla-get-propertyname x)))
+              (progn
+                  (vla-put-value x (vlax-make-variant val (vlax-variant-type (vla-get-value x))))
+                  (cond (val) (t))
+              )
+          )
+      )
+      (vlax-invoke blk 'getdynamicblockproperties)
   )
 )
 
@@ -264,6 +283,94 @@
 )
 
 ; -------------------------------
+; Traffic Elements Functions
+; -------------------------------
+
+(defun AddSingleRoad(firstPoint secondPoint / width vlaObj)
+  (InsertBlock "Kolovoz-DYN" "10-Kolovoz" firstPoint groundY "1" "0")
+  
+  (setq vlaObj (vlax-ename->vla-object (entlast)))
+  
+  (if (< firstPoint secondPoint)
+    (progn
+      (setq width (- secondPoint firstPoint))
+      (setdynpropvalue vlaObj "sirina levo" 0)
+      (setdynpropvalue vlaObj "sirina desno" width)
+    )
+    (progn
+      (setq width (- secondPoint firstPoint))
+      (setdynpropvalue vlaObj "sirina levo" width)
+      (setdynpropvalue vlaObj "sirina desno" 0)
+    )
+  )
+  (SetDynPropValue vlaObj "razmera" (* scale 100))
+    
+  (vla-update vlaObj)
+  
+  (vlax-release-object vlaObj)
+)
+
+(defun AddAxisRoad (widthLeft widthRight / vlaObj)
+  (InsertBlock "Kolovoz-DYN" "10-Kolovoz" axisX groundY "1" "0")
+  
+  (setq vlaObj (vlax-ename->vla-object (entlast)))
+  
+  (SetDynPropValue vlaObj "sirina levo" widthLeft)
+  (SetDynPropValue vlaObj "sirina desno" widthRight)
+  (SetDynPropValue vlaObj "razmera" (* scale 100))
+    
+  (vla-update vlaObj)
+  
+  (vlax-release-object vlaObj)
+)
+
+(defun AddRoadway( / roadType widthLeft widthRight firstPoint secondPoint)
+  (LoadDialog "newroadway")
+  
+  (cond
+    ((equal roadType "axis-road")
+      (LoadDialog "newaxisroad")
+      (AddAxisRoad (atof widthLeft) (atof widthRight))
+    )
+    ((equal roadType "single-road")
+      (setvar 'OSMODE OSNAP-SETTINGS)
+      (setq firstPoint (car (getpoint "\nPokazite prvu tacku kolovoz:")))
+      (setq secondPoint (car (getpoint "\nPokazite drugu tacku kolovoz:")))
+      (setvar 'OSMODE 0)
+      (if (= firstPoint secondPoint)
+        (alert "Tacke moraju biti razlicite!")
+        (AddSingleRoad firstPoint secondPoint)
+      )
+    )
+  )
+)
+
+(defun AddTrafficElements( / elementType)
+  (setq elementType "1")
+  
+  (while (not (equal elementType "0"))
+    (LoadDialog "newtrafficelement")
+    (cond
+      ((equal elementType "roadway")
+        (AddRoadway)
+      )
+      ((equal elementType "sidewalk")
+        ;(AddSidewalk)
+      )
+      ((equal elementType "bikepath")
+        ;(AddBikepath)
+      )
+      ((equal elementType "parking")
+        ;(AddParking)
+      )
+      ((equal elementType "green")
+        ;(AddGreen)
+      )
+    )
+  )
+)
+
+; -------------------------------
 ; Cross Section Type 2 Main Workflow
 ; -------------------------------
 
@@ -347,6 +454,8 @@
   (AddInitialDims leftX rightX groundY axisX upperDimsY dimSpacing)
   
   (ZoomAndRegen)
+  
+  (AddTrafficElements)
 )
 
 ; -------------------------------
