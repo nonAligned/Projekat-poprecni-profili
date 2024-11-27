@@ -140,6 +140,18 @@
   )
 )
 
+(defun DrawPline(firstPoint secondPoint lineWidth lineScale layer)
+  (command "._LAYER" "SET" layer "")
+  (command "._CELTSCALE" (rtos lineScale 2))
+  (command "._PLINE" 
+    firstPoint
+    "WIDTH" (strcat (rtos lineWidth 2)) (strcat (rtos lineWidth 2))
+    secondPoint
+    ""
+  )
+  (command "._CELTSCALE" "1")
+)
+
 (defun SetDimScale(dimStyleName newScale)
   (command "._DIMSTYLE" "RESTORE" dimStyleName)
   (setvar 'DIMSCALE newScale)
@@ -193,6 +205,21 @@
     )
   )
 )
+
+(defun GenerateId( / cdate)
+  (setq cdate (SplitStr (rtos (getvar "CDATE") 2) "."))
+  (strcat (strcase (substr (getvar "USERNAME") 1 2)) "-" (substr (car cdate) 3) (cadr cdate) "-" (substr (rtos (getvar "MILLISECS") 2 0) 2 4))
+)
+
+(defun DrawGround(leftX rightX y / leftEndpoint rightEndpoint)
+  (setq leftEndpoint (strcat (rtos leftX 2) "," (rtos y 2)))
+  (setq rightEndpoint (strcat (rtos rightX 2) "," (rtos y 2)))
+  (DrawPline leftEndpoint rightEndpoint (* 0.05 scale) 1 "03-Tlo")
+)
+
+; -------------------------------
+; Cross Section Type 2 Main Workflow
+; -------------------------------
 
 (defun ImportInitialStyles()
   (LoadLineType "DASHED2")
@@ -254,9 +281,23 @@
   (WriteMText "Poprecni profil" "MC" axisPointFirst axisPointSecond (* 0.25 scale) (strcat "од ОТ " axisPoint1 " до ОТ " axisPoint2) "01-Tekst")
 )
 
-(defun GenerateId( / cdate)
-  (setq cdate (SplitStr (rtos (getvar "CDATE") 2) "."))
-  (strcat (strcase (substr (getvar "USERNAME") 1 2)) "-" (substr (car cdate) 3) (cadr cdate) "-" (substr (rtos (getvar "MILLISECS") 2 0) 2 4))
+(defun DrawCrossSection ( / groundX groundY upperMaxY lowerMaxY leftX rightX axisX upperDimsY lowerDimsY dimSpacing lowerDimsLeftList lowerDimsRightList)
+  (setq groundX (* 10.75 scale))
+  (setq groundY (* 7.5 scale))
+  (setq upperMaxY (* 11.5 scale))
+  (setq lowerMaxY (* 3.5 scale))
+  (setq leftX (- groundX (/ width 2)))
+  (setq rightX (+ groundX (/ width 2)))
+  (setq axisX (+ leftX (atof axisDistanceLeft)))
+  ;(setq cs-left (strcat (rtos left-x 2) "," (rtos mid-y 2)))
+  ;(setq cs-right (strcat (rtos right-x 2) "," (rtos mid-y 2)))
+  (setq upperDimsY (+ groundY (* 8.5 scale)))
+  (setq lowerDimsY (- groundY (* 5.5 scale)))
+  (setq dimSpacing (* (getvar 'DIMDLI) scale))
+  
+  
+  (DrawGround leftX rightX groundY)
+
 )
 
 ; -------------------------------
@@ -278,6 +319,8 @@
   (ImportInitialStyles)
   (DrawFrame)
   (WriteText)
+  (DrawCrossSection)
+  
 )
 
 ; -------------------------------
@@ -314,6 +357,8 @@
       (alert "Prekid komande")
     )
   )
+  
+  (setvar 'OSMODE OSNAPSETTINGS)
   
   (princ) ; Suppress return of extraneous results
 )
