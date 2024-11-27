@@ -136,14 +136,12 @@ newaxisroad: dialog {
   : boxed_column {
     : edit_box { 
       key = "width-left";
-      value = "";
       label = "Sirina levo od ose (m):";
       action = "(setq widthLeft $value)";
       edit_width = 4;
     }
     : edit_box { 
       key = "width-right";
-      value = "";
       label = "Sirina desno od ose (m):";
       action = "(setq widthRight $value)";
       edit_width = 4;
@@ -153,4 +151,48 @@ newaxisroad: dialog {
   spacer;
 
   ok_cancel;
+
+  errtile;
+}
+
+newsidewalk: dialog {
+  label = "Dodajte novi trotoar";
+  : boxed_column {
+    : button { 
+      label = "Obostrani trotoari uz reg. linije";
+      key = "edge-sidewalks";
+      action = "(setq sidewalkType \"edge-sidewalks\")(done_dialog 1)";
+    }
+    : button { 
+      label = "Pojedinacni trotoar";
+      key = "single-sidewalk";
+      action = "(setq sidewalkType \"single-sidewalk\")(done_dialog 1)";
+    }
+  }
+
+  spacer;
+
+  ok_cancel;
+}
+
+newedgesidewalks: dialog {
+  label = "Trotoari uz regulaciju";
+  : boxed_column {
+    : edit_box { 
+      key = "left-sidewalk";
+      label = "Sirina levog trotoara (m):";
+      edit_width = 4;
+      action = "(setq widthLeft $value)";
+    }
+    : edit_box { 
+      key = "right-sidewalk";
+      label = "Sirina desnog trotoara (m):";
+      edit_width = 4;
+      action = "(setq widthRight $value)";
+    }
+  }
+
+  ok_cancel;
+
+  errtile;
 }

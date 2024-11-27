@@ -19,6 +19,12 @@
             ((equal dialogName "newcstype2")
               (action_tile "accept" "(TestDialog)")
             )
+            ((equal dialogName "newaxisroad")
+              (action_tile "accept" "(TestDialog)")
+            )
+            ((equal dialogName "newedgesidewalks")
+              (action_tile "accept" "(TestDialog)")
+            )
             ((equal dialogName "newtrafficelement")
               (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
               (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
@@ -40,9 +46,49 @@
       ((equal dialogName "newcstype2")
         (ValidateDialogNCST2)
       )
+      ((equal dialogName "newaxisroad")
+        (ValidateDialogNAR)
+      )
+      ((equal dialogName "newedgesidewalks")
+        (ValidateDialogNES)
+      )
     ) 
     (if isDialogValid
       (done_dialog 1)
+    )
+  )
+  
+  (defun ValidateDialogNES()
+    (if (not (distof (get_tile "left-sidewalk")))
+      (progn
+        (set_tile "error" "Uneta vrednost nije broj")
+        (mode_tile "left-sidewalk" 2)
+        (setq isDialogValid nil)
+      )
+    )
+    (if (not (distof (get_tile "right-sidewalk")))
+      (progn
+        (set_tile "error" "Uneta vrednost nije broj")
+        (mode_tile "right-sidewalk" 2)
+        (setq isDialogValid nil)
+      )
+    )
+  )
+  
+  (defun ValidateDialogNAR()
+    (if (not (distof (get_tile "width-left")))
+      (progn
+        (set_tile "error" "Uneta vrednost nije broj")
+        (mode_tile "width-left" 2)
+        (setq isDialogValid nil)
+      )
+    )
+    (if (not (distof (get_tile "width-right")))
+      (progn
+        (set_tile "error" "Uneta vrednost nije broj")
+        (mode_tile "width-right" 2)
+        (setq isDialogValid nil)
+      )
     )
   )
   
@@ -303,23 +349,117 @@
 )
 
 ; -------------------------------
-; Traffic Elements Functions
+; Sidewalk Functions
 ; -------------------------------
 
-(defun AddSingleRoad(firstPoint secondPoint / width vlaObj)
+(defun AddSingleSidewalk(firstPoint secondPoint / insertPoint sidewalkWidth vlaObj)
+  (if (< firstPoint secondPoint)
+    (progn
+      (setq sidewalkWidth (- secondPoint firstPoint))
+      (setq insertPoint firstPoint)
+    )
+    (progn
+      (setq sidewalkWidth (- firstPoint secondPoint))
+      (setq insertPoint secondPoint)
+    )
+  )
+  (InsertBlock "Trotoar-DYN" "11-Trotoar" insertPoint groundY "1" "0")
+  
+  (setq vlaObj (vlax-ename->vla-object (entlast)))
+  
+  (SetDynPropValue vlaObj "sirina" sidewalkWidth)
+  (SetDynPropValue vlaObj "razmera" (* scale 100))
+    
+  (vla-update vlaObj)
+  
+  (vlax-release-object vlaObj)
+
+  (AddTrafficDims insertPoint (+ insertPoint sidewalkWidth) (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
+)
+
+(defun AddEdgeSidewalks(widthLeft widthRight)
+  (if (not (equal widthLeft 0))
+    (progn
+      (InsertBlock "Trotoar-DYN" "11-Trotoar" leftX groundY "1" "0")
+    
+      (setq vlaObj (vlax-ename->vla-object (entlast)))
+      
+      (SetDynPropValue vlaObj "sirina" widthLeft)
+      (SetDynPropValue vlaObj "razmera" (* scale 100))
+        
+      (vla-update vlaObj)
+      
+      (vlax-release-object vlaObj)
+
+      (AddTrafficDims leftX (+ leftX widthLeft) (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
+    )
+  )
+  
+  (if (not (equal widthRight 0))
+    (progn
+      (InsertBlock "Trotoar-DYN" "11-Trotoar" (- rightX widthRight) groundY "1" "0")
+    
+      (setq vlaObj (vlax-ename->vla-object (entlast)))
+      
+      (SetDynPropValue vlaObj "sirina" widthRight)
+      (SetDynPropValue vlaObj "razmera" (* scale 100))
+        
+      (vla-update vlaObj)
+      
+      (vlax-release-object vlaObj)
+
+      (AddTrafficDims (- rightX widthRight) rightX (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
+    )
+  )
+)
+
+(defun AddSidewalk( / sidewalkType widthLeft widthRight firstPoint secondPoint)
+  (LoadDialog "newsidewalk")
+  
+  (cond
+    ((equal sidewalkType "edge-sidewalks")
+      (LoadDialog "newedgesidewalks")
+      (if widthLeft
+        (setq widthLeft (atof widthLeft))
+        (setq widthLeft 0)
+      )
+      (if widthRight
+        (setq widthRight (atof widthRight))
+        (setq widthRight 0)
+      )
+      (AddEdgeSidewalks widthLeft widthRight)
+    )
+    ((equal sidewalkType "single-sidewalk")
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (setq firstPoint (car (getpoint "\nPokazite prvu tacku trotoara:")))
+      (setq secondPoint (car (getpoint "\nPokazite drugu tacku trotoara:")))
+      (setvar "OSMODE" 0)
+      (if (= firstPoint secondPoint)
+        (alert "Tacke moraju biti razlicite!")
+        (AddSingleSidewalk firstPoint secondPoint)
+      )
+    )
+  )
+)
+
+; -------------------------------
+; Roadway Functions
+; -------------------------------
+
+(defun AddSingleRoad(firstPoint secondPoint / roadWidth vlaObj)
   (InsertBlock "Kolovoz-DYN" "10-Kolovoz" firstPoint groundY "1" "0")
   
   (setq vlaObj (vlax-ename->vla-object (entlast)))
   
   (if (< firstPoint secondPoint)
     (progn
-      (setq width (- secondPoint firstPoint))
+      (setq roadWidth (- secondPoint firstPoint))
       (setdynpropvalue vlaObj "sirina levo" 0)
-      (setdynpropvalue vlaObj "sirina desno" width)
+      (setdynpropvalue vlaObj "sirina desno" roadWidth)
     )
     (progn
-      (setq width (- firstPoint secondPoint))
-      (setdynpropvalue vlaObj "sirina levo" width)
+      (setq roadWidth (- firstPoint secondPoint))
+      (setdynpropvalue vlaObj "sirina levo" roadWidth)
       (setdynpropvalue vlaObj "sirina desno" 0)
     )
   )
@@ -359,7 +499,7 @@
         (alert "Morate uneti bar jedno rastojanje od ose!")
         (progn
           (if (not widthLeft)(setq widthLeft "0"))
-          (if (not widthLeft)(setq widthRight "0"))
+          (if (not widthRight)(setq widthRight "0"))
           (AddAxisRoad (atof widthLeft) (atof widthRight))
         )
       )
@@ -377,6 +517,10 @@
   )
 )
 
+; -------------------------------
+; Main Traffic Elements Function
+; -------------------------------
+
 (defun AddTrafficElements( / elementType)
   (setq elementType "1")
   
@@ -387,7 +531,7 @@
         (AddRoadway)
       )
       ((equal elementType "sidewalk")
-        ;(AddSidewalk)
+        (AddSidewalk)
       )
       ((equal elementType "bikepath")
         ;(AddBikepath)
