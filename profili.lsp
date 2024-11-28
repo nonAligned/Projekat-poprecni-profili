@@ -18,6 +18,7 @@
           (cond
             ((equal dialogName "newcstype2")
               (action_tile "accept" "(TestDialog)")
+              (action_tile "cancel" "(setq dialogCancelled 1)(done_dialog 0)")
             )
             ((equal dialogName "newaxisroad")
               (action_tile "accept" "(TestDialog)")
@@ -343,7 +344,7 @@
 
 (defun GenerateId( / cdate)
   (setq cdate (SplitStr (rtos (getvar "CDATE") 2) "."))
-  (strcat (strcase (substr (getvar "USERNAME") 1 2)) "-" (substr (car cdate) 3) (cadr cdate) "-" (substr (rtos (getvar "MILLISECS") 2 0) 2 4))
+  (strcat (strcase (substr (getvar "USERNAME") 1 2)) "_" (substr (car cdate) 3) (cadr cdate) "_" (substr (rtos (getvar "MILLISECS") 2 0) 2 4))
 )
 
 (defun DrawGround(leftX rightX y / leftEndpoint rightEndpoint)
@@ -1044,31 +1045,35 @@
 ; Cross Section Type 2 Entry Point
 ; -------------------------------
 
-(defun NewCsType2(/ drawingId streetName streetOrientation axisDistanceLeft axisDistanceRight axisPoint1 axisPoint2 scale width)
+(defun NewCsType2(/ dialogCancelled drawingId streetName streetOrientation axisDistanceLeft axisDistanceRight axisPoint1 axisPoint2 scale width)
   (LoadDialog "newcstype2")
   
-  (setq width (+ (atof axisDistanceLeft) (atof axisDistanceRight)))
-  (if (equal axisPoint1 "")
-    (setq axisPoint1 "00000")
+  (if (not dialogCancelled)
+    (progn
+      (setq width (+ (atof axisDistanceLeft) (atof axisDistanceRight)))
+        (if (equal axisPoint1 "")
+          (setq axisPoint1 "00000")
+        )
+        (if (equal axisPoint2 "")
+          (setq axisPoint2 "00000")
+        )
+        
+        (cond
+          ((<= width 18.0) (setq scale 1.0))
+          ((<= width 36.0) (setq scale 2.0))
+          ((<= width 54.0) (setq scale 3.0))
+          (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 54 metra.") (exit)))
+        )
+        
+        (setq drawingId (GenerateId))
+        (ImportInitialStyles)
+        (DrawFrame)
+        (WriteText)
+        (DrawCrossSection)
+        (SaveFile)
+    )
+    (alert "Prekid komande")
   )
-  (if (equal axisPoint2 "")
-    (setq axisPoint2 "00000")
-  )
-  
-  (cond
-    ((<= width 18.0) (setq scale 1.0))
-    ((<= width 36.0) (setq scale 2.0))
-    ((<= width 54.0) (setq scale 3.0))
-    (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 54 metra.") (exit)))
-  )
-  
-  (setq drawingId (GenerateId))
-  (ImportInitialStyles)
-  (DrawFrame)
-  (WriteText)
-  (DrawCrossSection)
-  (SaveFile)
-  
 )
 
 ; -------------------------------
