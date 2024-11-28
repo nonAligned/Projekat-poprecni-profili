@@ -1428,6 +1428,7 @@
 ; -------------------------------
 
 (defun c:NewCrossSection ( / csType blockDefinitionFile)
+  (setvar "CMDECHO" 0)
   (vl-load-com)
   
   (Cleanup "full")
@@ -1460,6 +1461,8 @@
   )
   
   (setvar "OSMODE" OSNAPSETTINGS)
+  
+  (setvar "CMDECHO" 1)
   
   (princ) ; Suppress return of extraneous results
 )
