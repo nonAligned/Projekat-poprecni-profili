@@ -217,12 +217,6 @@
   (command "._CELTSCALE" "1")
 )
 
-(defun SetDimScale(dimStyleName newScale)
-  (command "._DIMSTYLE" "RESTORE" dimStyleName)
-  (setvar 'DIMSCALE newScale)
-  (command "_DIMSTYLE" "SAVE" dimStyleName "YES")
-)
-
 (defun WriteDText(style justify insertPoint height rotation content layer)
   (command "._LAYER" "SET" layer "")
   (command "._TEXT"
@@ -254,10 +248,21 @@
   )
 )
 
+(defun SetDimStyleCurrent (dimName / acdoc)
+ (setq acdoc (vla-get-ActiveDocument (vlax-get-acad-object)))
+ (if (tblsearch "DIMSTYLE" dimName)
+   (vla-put-activeDimstyle
+     acdoc
+     (vla-item (vla-get-Dimstyles acdoc) dimName)
+   )
+ )
+)
+
 (defun AddLinDim(dimX1 dimX2 dimY posY dimStyleName layerName)
   (command "._LAYER" "SET" layer "")
-  (command "._DIMSTYLE" "RESTORE" dimStyleName)
-  
+  (SetDimStyleCurrent dimStyleName)
+  (setvar "DIMSCALE" scale)
+
   (command
     "._DIMLINEAR"
     (strcat (rtos dimX1 2) "," (rtos dimY 2))
@@ -283,6 +288,7 @@
       (entdel (entlast))
     )
   )
+  (SetDimStyleCurrent "Poprecni profil")
 )
 
 (defun GenerateId( / cdate)
@@ -374,7 +380,7 @@
   
   (vlax-release-object vlaObj)
 
-  (AddTrafficDims insertPoint (+ insertPoint sidewalkWidth) (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
+  (AddTrafficDims insertPoint (+ insertPoint sidewalkWidth) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil" 4)
 )
 
 (defun AddEdgeSidewalks(widthLeft widthRight)
@@ -577,8 +583,6 @@
   (MakeLayer "32-Pomocna linija" "7" "DASHED2")
 
   (ImportDimStyles)
-  (SetDimScale "Poprecni profil priblizno" scale)
-  (SetDimScale "Poprecni profil" scale)
 )
 
 (defun DrawFrame ( / outerFirst outerSecond innerFirst innerSecond)
