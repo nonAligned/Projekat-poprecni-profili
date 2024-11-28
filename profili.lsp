@@ -187,9 +187,55 @@
 ; UTILITY FUNCTIONS
 ; -------------------------------
 
-(defun Cleanup()
-  (command "_.ERASE" "ALL" "")
-  (command "_.PURGE" "ALL" "*" "N")
+(defun ConvertCyrillicToLatin (inputString / charMap result i char latinChar)
+  ;; Mapping Cyrillic to Latin
+  (setq charMap
+        '(
+          ("А" . "A") ("Б" . "B") ("В" . "V") ("Г" . "G") ("Д" . "D") ("Ђ" . "Dj")
+          ("Е" . "E") ("Ж" . "Z") ("З" . "Z") ("И" . "I") ("Ј" . "J") ("К" . "K")
+          ("Л" . "L") ("Љ" . "Lj") ("М" . "M") ("Н" . "N") ("Њ" . "Nj") ("О" . "O")
+          ("П" . "P") ("Р" . "R") ("С" . "S") ("Т" . "T") ("Ћ" . "C") ("У" . "U")
+          ("Ф" . "F") ("Х" . "H") ("Ц" . "C") ("Ч" . "C") ("Џ" . "Dz") ("Ш" . "S")
+          ("а" . "a") ("б" . "b") ("в" . "v") ("г" . "g") ("д" . "d") ("ђ" . "dj")
+          ("е" . "e") ("ж" . "z") ("з" . "z") ("и" . "i") ("ј" . "j") ("к" . "k")
+          ("л" . "l") ("љ" . "lj") ("м" . "m") ("н" . "n") ("њ" . "nj") ("о" . "o")
+          ("п" . "p") ("р" . "r") ("с" . "s") ("т" . "t") ("ћ" . "c") ("у" . "u")
+          ("ф" . "f") ("х" . "h") ("ц" . "c") ("ч" . "c") ("џ" . "dz") ("ш" . "s")
+          ("Č" . "C") ("Ć" . "C") ("Đ" . "Dj") ("Š" . "S") ("Ž" . "Z")
+          ("č" . "c") ("ć" . "c") ("đ" . "dj") ("š" . "s") ("ž" . "z")
+        )
+  )
+  
+  ; Initialize result as an empty string
+  (setq result "")
+  ; Initialize result as an empty string
+  (setq i 0)
+  
+  ; Loop through each character in the input string
+  (repeat (strlen inputString)
+    (setq char (substr inputString (1+ i) 1)) ;; Get the character at index i
+    (setq latinChar (cdr (assoc char charMap))) ;; Look up the character in the map
+    (setq result (strcat result (if latinChar latinChar char))) ;; Append to result
+    (setq i (1+ i)) ;; Increment index
+  )
+  
+  ; Return the converted string
+  result
+)
+
+(defun Cleanup(mode)
+  (cond
+    ((equal mode "erase")
+      (command "_.ERASE" "ALL" "")
+    )
+    ((equal mode "purge")
+      (command "_.PURGE" "ALL" "*" "N")
+    )
+    ((equal mode "full")
+      (command "_.ERASE" "ALL" "")
+      (command "_.PURGE" "ALL" "*" "N")
+    )
+  )
 )
 
 (defun ZoomAndRegen()
@@ -1033,7 +1079,7 @@
   (AddTrafficElements)
   (AddUtilityElements)
   
-  (command "_.PURGE" "ALL" "*" "N")
+  (Cleanup "purge")
   
 )
 
@@ -1297,11 +1343,48 @@
   
 )
 
-(defun SaveFile()
+(defun SaveFile( / fileName)
+  (setq fileName (strcat drawingId "-" axisPoint1 "_" axisPoint2 "-" (ConvertCyrillicToLatin streetName)))
+  (while (vl-string-search "/" fileName)
+    (setq fileName (vl-string-subst "" "/" fileName))
+  )
+  (while (vl-string-search "\\" fileName)
+    (setq fileName (vl-string-subst "" "\\" fileName))
+  )
+  (while (vl-string-search ":" fileName)
+    (setq fileName (vl-string-subst "" ":" fileName))
+  )
+  (while (vl-string-search "." fileName)
+    (setq fileName (vl-string-subst "" "." fileName))
+  )
+  (while (vl-string-search "?" fileName)
+    (setq fileName (vl-string-subst "" "?" fileName))
+  )
+  (while (vl-string-search "*" fileName)
+    (setq fileName (vl-string-subst "" "*" fileName))
+  )
+  (while (vl-string-search "<" fileName)
+    (setq fileName (vl-string-subst "" "<" fileName))
+  )
+  (while (vl-string-search ">" fileName)
+    (setq fileName (vl-string-subst "" ">" fileName))
+  )
+  (while (vl-string-search "," fileName)
+    (setq fileName (vl-string-subst "" "," fileName))
+  )
+  (while (vl-string-search "|" fileName)
+    (setq fileName (vl-string-subst "" "|" fileName))
+  )
+  (while (vl-string-search "\"" fileName)
+    (setq fileName (vl-string-subst "" "\"" fileName))
+  )
+
+  
   (command "._SAVEAS" 
   "2018"
-  (strcat "D:\\Programiranje\\AutoCAD\\Projekat poprecni profili\\saved\\" drawingId "-" axisPoint1 "_" axisPoint2 "-" streetName ".dwg")
+  (strcat "D:\\Programiranje\\AutoCAD\\Projekat poprecni profili\\saved\\" fileName ".dwg")
   )
+  
 )
 
 ; -------------------------------
@@ -1324,8 +1407,7 @@
         (cond
           ((<= width 18.0) (setq scale 1.0))
           ((<= width 36.0) (setq scale 2.0))
-          ((<= width 54.0) (setq scale 3.0))
-          (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 54 metra.") (exit)))
+          (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 36 metra.") (exit)))
         )
         
         (setq drawingId (GenerateId))
@@ -1348,7 +1430,8 @@
 (defun c:NewCrossSection ( / csType blockDefinitionFile)
   (vl-load-com)
   
-  (Cleanup)
+  (Cleanup "full")
+  (Cleanup "purge")
   
   (setq blockDefinitionFile "Blokovi.dwg")
   
