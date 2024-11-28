@@ -421,6 +421,15 @@
     T
     nil
   )
+  
+)
+
+(defun AddVerticalDimLines(lineX lineY1 lineY2)
+  (cond
+    ((< lineY1 lineY2)
+      (DrawPline (strcat (rtos lineX 2) "," (rtos lineY1 2)) (strcat (rtos lineX 2) "," (rtos lineY2 2)) 0 (* 0.05 scale) "32-Pomocna linija") 
+    )
+  )
 )
 
 ; -------------------------------
@@ -884,6 +893,30 @@
 ; Main Utility Elements Function
 ; -------------------------------
 
+(defun AddUtilityDims( / sortedLeftDims sortedRightDims currentY)
+  (setq sortedLeftDims (vl-sort lowerDimsLeftList '<))
+  (setq sortedRightDims (vl-sort lowerDimsRightList '>))
+  (setq currentY lowerDimsY)
+  
+  (foreach point sortedLeftDims
+    (progn
+      (SetDimStyleCurrent "Poprecni profil priblizno")
+      (AddLinDim axisX point groundY currentY "Poprecni profil priblizno" "31-Kote instalacije")
+      (AddVerticalDimLines point currentY (- groundY 2))
+      (setq currentY (+ dimSpacing currentY))
+    )
+  )
+  (setq currentY lowerDimsY)
+  (foreach point sortedRightDims
+    (progn
+      (SetDimStyleCurrent "Poprecni profil priblizno")
+      (AddLinDim axisX point groundY currentY "Poprecni profil priblizno" "31-Kote instalacije")
+      (AddVerticalDimLines point currentY (- groundY 2))
+      (setq currentY (+ dimSpacing currentY))
+    )
+  )
+)
+
 (defun AddUtilityElements( / elementType)
   (setq elementType "1")
   
@@ -901,6 +934,8 @@
       )
     )
   )
+  
+  (AddUtilityDims)
 )
 
 ; -------------------------------
