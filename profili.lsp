@@ -401,7 +401,26 @@
       (AddLinDim x2 rightX groundY posY "Poprecni profil priblizno" "30-Kote saobracaj")
     )
   )
+)
+
+(defun IsUtilityPositionValid(newPoint / isPointValid)
+  (setq isPointValid 1)
   
+  (foreach point lowerDimsLeftList 
+    (if (equal point newPoint 0.1)
+      (setq isPointValid nil)
+    )
+  )
+  (foreach point lowerDimsRightList
+    (if (equal point newPoint 0.1)
+      (setq isPointValid nil)
+    )
+  )
+  
+  (if isPointValid
+    T
+    nil
+  )
 )
 
 ; -------------------------------
@@ -734,25 +753,50 @@
 )
 
 ; -------------------------------
+; Public Lighting And Treeline Functions
+; -------------------------------
+
+(defun AddPublicLightingOrTreeline( blockName layerName / insertPoint vlaObj)
+  (setvar "OSMODE" OSNAPSETTINGS)
+  (setq insertPoint (car (getpoint "\nPokazite poziciju nove javne rasvete/drvoreda")))
+  (setvar "OSMODE" 0)
+  
+  (if insertPoint
+    (if (IsUtilityPositionValid insertPoint)
+      (progn
+        (InsertBlock blockName layerName insertPoint groundY "1" "0")
+    
+        (setq vlaObj (vlax-ename->vla-object (entlast)))
+        
+        (SetDynPropValue vlaObj "rastojanjeopisa" (* 6.5 scale))
+        
+        (cond
+          ((< insertPoint axisX)
+            (SetDynPropValue vlaObj "pozicijarazmera" (strcat "levo" (rtos (* scale 100) 2 0)))
+            (setq lowerDimsLeftList (append lowerDimsLeftList (list insertPoint))) 
+          )
+          ((> insertPoint axisX)
+            (SetDynPropValue vlaObj "pozicijarazmera" (strcat "desno" (rtos (* scale 100) 2 0)))   
+            (setq lowerDimsRightList (append lowerDimsRightList (list insertPoint))) 
+          )
+        )
+        
+        (vla-update vlaObj)
+        
+        (vlax-release-object vlaObj)
+      )
+      (alert "Na pokazanom mestu vec postoji instalacija")
+    )
+  )
+)
+
+; -------------------------------
 ; Underground Utilities Functions
 ; -------------------------------
 
-(defun AddUndergroundUtility(blockName positionX / isPointFree vlaObj)
-  (setq isPointFree 1)
-  
-  (foreach point lowerDimsLeftList 
-    (if (equal point positionX 0.1)
-      (setq isPointFree nil)
-    )
-  )
-  
-  (foreach point lowerDimsRightList
-    (if (equal point positionX 0.1)
-      (setq isPointFree nil)
-    )
-  )
-  
-  (if isPointFree
+(defun AddUndergroundUtility(blockName positionX / vlaObj)
+
+  (if (IsUtilityPositionValid positionX)
     (progn
       (InsertBlock blockName "20-Instalacije" positionX groundY "1" "0")
   
@@ -788,12 +832,7 @@
       (setvar "OSMODE" 0)
 
       (if insertPoint
-        (if (or (member insertPoint lowerDimsLeftList)(member insertPoint lowerDimsRightList))
-          (alert "Na selektovanoj poziciji vec postoji instalacija")
-          (progn
-            (AddUndergroundUtility utilityName insertPoint)
-          )
-        )
+        (AddUndergroundUtility utilityName insertPoint)
       )
     )  
   )
@@ -855,10 +894,10 @@
         (AddUndergroundUtilities)
       )
       ((equal elementType "public-lighting")
-        ;(AddPublicLighting)
+        (AddPublicLightingOrTreeline "PP-Rasveta" "21-Javna rasveta")
       )
       ((equal elementType "treeline")
-        ;(AddTreeline)
+        (AddPublicLightingOrTreeline "PP-Drvored" "22-Drvored")
       )
     )
   )
