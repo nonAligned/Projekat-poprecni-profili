@@ -30,6 +30,11 @@
               (action_tile "accept" "(TestDialog)")
               (action_tile "cancel" "(setq bikepathWidth nil)(done_dialog 0)")
             )
+            ((equal dialogName "newparking")
+              (set_tile "parking-side" "left-parking")
+              (action_tile "accept" "(TestDialog)")
+              (action_tile "cancel" "(setq parkingWidth nil)(done_dialog 0)")
+            )
             ((equal dialogName "newtrafficelement")
               (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
               (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
@@ -60,10 +65,23 @@
       ((equal dialogName "newbikepath")
         (ValidateDialogNBP)
       )
+      ((equal dialogName "newparking")
+        (ValidateDialogNP)
+      )
     ) 
     (if isDialogValid
       (done_dialog 1)
     )
+  )
+  
+  (defun ValidateDialogNP()
+    (if (not (distof (get_tile "parking-width")))
+      (progn
+        (set_tile "error" "Uneta vrednost nije broj")
+        (mode_tile "parking-width" 2)
+        (setq isDialogValid nil)
+      )
+    )   
   )
   
   (defun ValidateDialogNBP()
@@ -373,10 +391,58 @@
 )
 
 ; -------------------------------
+; Parking Functions
+; -------------------------------
+
+(defun AddParking( / parkingSide insertPoint parkingWidth vlaObj)
+  (setq parkingSide 0)
+  (LoadDialog "newparking")
+  
+  (if (and parkingWidth (not (= parkingWidth "0")))
+    (progn
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (cond
+        ((equal parkingSide 0)
+          (setq insertPoint (car (getpoint "\nPokazite desnu ivicu parkinga:"))) 
+          (setq insertPoint (- insertPoint (atof parkingWidth)))
+        )
+        ((equal parkingSide 1)
+          (setq insertPoint (car (getpoint "\nPokazite levu ivicu parkinga:")))
+          (setq insertPoint (+ insertPoint (atof parkingWidth)))
+        )
+      )
+      (setvar "OSMODE" 0)
+
+      (InsertBlock "Parking-DYN" "13-Parking" insertPoint groundY "1" "0")
+      (setq vlaObj (vlax-ename->vla-object (entlast)))
+
+      (SetDynPropValue vlaObj "sirina" (atof parkingWidth))
+      (SetDynPropValue vlaObj "polozaj" parkingSide)
+      (SetDynPropValue vlaObj "razmera" (* scale 100))
+        
+      (vla-update vlaObj)
+      
+      (vlax-release-object vlaObj)
+
+      (cond
+        ((equal parkingSide 0)
+          (AddTrafficDims insertPoint (+ insertPoint (atof parkingWidth)) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil" 4)
+        )
+        ((equal parkingSide 1)
+          (AddTrafficDims insertPoint (- insertPoint (atof parkingWidth)) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil" 4)
+        )
+      )
+    ) 
+    
+  )
+)
+
+; -------------------------------
 ; Bikepath Functions
 ; -------------------------------
 
 (defun AddBikepath( / insertSide insertPoint bikepathWidth vlaObj)
+  (setq insertSide "left-side")
   (LoadDialog "newbikepath")
   
   (cond
@@ -597,7 +663,7 @@
         (AddBikepath)
       )
       ((equal elementType "parking")
-        ;(AddParking)
+        (AddParking)
       )
       ((equal elementType "green")
         ;(AddGreen)

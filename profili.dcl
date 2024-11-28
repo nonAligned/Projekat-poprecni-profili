@@ -223,4 +223,34 @@ newbikepath: dialog {
   }
   spacer;
   ok_cancel;
+  errtile;
+}
+
+newparking: dialog {
+  label = "Dodajte novi parking";
+  :radio_row {
+    label = "Polozaj parkinga";
+    key = "parking-side";
+    : radio_button {
+      label = "Levi parking"; 
+      key = "left-parking";
+      action = "(setq parkingSide 0)";
+    }
+    : radio_button {
+      label = "Desni parking";
+      key = "right-parking";
+      action = "(setq parkingSide 1)";
+    }
+  }
+  : boxed_column {
+    : edit_box { 
+      key = "parking-width";
+      label = "Sirina parkinga (m):";
+      edit_width = 4;
+      action = "(setq parkingWidth $value)";
+    }
+  }
+  spacer;
+  ok_cancel;
+  errtile;
 }
