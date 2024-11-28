@@ -196,3 +196,31 @@ newedgesidewalks: dialog {
 
   errtile;
 }
+
+newbikepath: dialog {
+  label = "Dodajte novu biciklisticku stazu";
+  :radio_row {
+    label = "Tacka insertovanja";
+    key = "insert-side";
+    : radio_button {
+      label = "Leva ivica";
+      key = "left-side";
+      action = "(setq insertSide \"left-side\")";
+    }
+    : radio_button {
+      label = "Desna ivica";
+      key = "right-side";
+      action = "(setq insertSide \"right-side\")";
+    }
+  }
+  : boxed_column {
+    : edit_box { 
+      key = "bikepath-width";
+      label = "Sirina staze (m):";
+      edit_width = 4;
+      action = "(setq bikepathWidth $value)";
+    }
+  }
+  spacer;
+  ok_cancel;
+}

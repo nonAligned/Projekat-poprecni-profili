@@ -25,6 +25,11 @@
             ((equal dialogName "newedgesidewalks")
               (action_tile "accept" "(TestDialog)")
             )
+            ((equal dialogName "newbikepath")
+              (set_tile "insert-side" "left-side")
+              (action_tile "accept" "(TestDialog)")
+              (action_tile "cancel" "(setq bikepathWidth nil)(done_dialog 0)")
+            )
             ((equal dialogName "newtrafficelement")
               (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
               (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
@@ -52,9 +57,22 @@
       ((equal dialogName "newedgesidewalks")
         (ValidateDialogNES)
       )
+      ((equal dialogName "newbikepath")
+        (ValidateDialogNBP)
+      )
     ) 
     (if isDialogValid
       (done_dialog 1)
+    )
+  )
+  
+  (defun ValidateDialogNBP()
+    (if (not (distof (get_tile "bikepath-width")))
+      (progn
+        (set_tile "error" "Uneta vrednost nije broj")
+        (mode_tile "bikepath-width" 2)
+        (setq isDialogValid nil)
+      )
     )
   )
   
@@ -355,6 +373,42 @@
 )
 
 ; -------------------------------
+; Bikepath Functions
+; -------------------------------
+
+(defun AddBikepath( / insertSide insertPoint bikepathWidth vlaObj)
+  (LoadDialog "newbikepath")
+  
+  (cond
+    ((and bikepathWidth (not (= bikepathWidth "0")))
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (setq insertPoint (car (getpoint "\nPokazite tacku insertovanja staze:")))
+      (setvar "OSMODE" 0)
+      (if insertPoint
+        (progn
+          (cond
+            ((equal insertSide "right-side")
+              (setq insertPoint (- insertPoint (atof bikepathWidth)))
+            )
+          )
+          (InsertBlock "Biciklisticka-DYN" "12-Biciklisticka staza" insertPoint groundY "1" "0")
+          (setq vlaObj (vlax-ename->vla-object (entlast)))
+  
+          (SetDynPropValue vlaObj "sirina" (atof bikepathWidth))
+          (SetDynPropValue vlaObj "razmera" (* scale 100))
+            
+          (vla-update vlaObj)
+          
+          (vlax-release-object vlaObj)
+
+          (AddTrafficDims insertPoint (+ insertPoint (atof bikepathWidth)) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil" 4)
+        )
+      )     
+    )
+  )
+)
+
+; -------------------------------
 ; Sidewalk Functions
 ; -------------------------------
 
@@ -540,7 +594,7 @@
         (AddSidewalk)
       )
       ((equal elementType "bikepath")
-        ;(AddBikepath)
+        (AddBikepath)
       )
       ((equal elementType "parking")
         ;(AddParking)
