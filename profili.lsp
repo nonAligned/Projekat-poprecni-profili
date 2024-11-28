@@ -1032,6 +1032,269 @@
   
   (AddTrafficElements)
   (AddUtilityElements)
+  
+  (command "_.PURGE" "ALL" "*" "N")
+  
+)
+
+(defun GenerateLegend( / firstRowX secondRowX currentRow currentY stepY)
+  (setq firstRowX (* 21.0 scale))
+  (setq secondRowX (* 24.95 scale))
+  (setq currentRow 1)
+  (setq currentY (* 1.0 scale))
+  (setq stepY (* 1.0 scale))
+  
+  (MakeLayer "02-Legenda" "7" "Continuous")
+  (command "._LAYER" "SET" "02-Legenda" "")
+  (if (tblsearch "BLOCK" "PP-Instalacije-elektro")
+    (progn 
+      (InsertBlock "PP-Legenda-elektro" "02-Legenda" firstRowX currentY scale "0")
+      (setq currentRow 2)
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Instalacije-gas")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-gasovod" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-gasovod" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Instalacije-vodovod")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-vodovod" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-vodovod" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Instalacije-telekom")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-telekom" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-telekom" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Instalacije-toplovod")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-toplovod" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-toplovod" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Instalacije-kanalizacija-fekalna")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-kanalizacija-fekalna" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-kanalizacija-fekalna" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Instalacije-kanalizacija-atmosferska")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-kanalizacija-atmosferska" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-kanalizacija-atmosferska" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Instalacije-kanalizacija-zajednicka")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-kanalizacija-zajednicka" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-kanalizacija-zajednicka" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Rasveta")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-rasveta" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-rasveta" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "PP-Drvored")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-drvored" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-drvored" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  
+  (if (equal currentRow 1)
+    (progn
+      (setq currentY (+ currentY (* 0.25 scale)))
+      (WriteDText "Poprecni profil" "BL" (strcat (rtos firstRowX 2) "," (rtos currentY 2)) (* 0.25 scale) "0" "ИНСТАЛАЦИЈЕ" "02-Legenda")
+      (setq currentY (+ currentY stepY))
+    )
+    (progn
+      (setq currentY (+ currentY stepY))
+      (setq currentY (+ currentY (* 0.25 scale)))
+      (WriteDText "Poprecni profil" "BL" (strcat (rtos firstRowX 2) "," (rtos currentY 2)) (* 0.25 scale) "0" "ИНСТАЛАЦИЈЕ" "02-Legenda")
+      (setq currentY (+ currentY stepY))
+      (setq currentRow 1)
+    )
+  )
+  
+  (if (tblsearch "BLOCK" "Kolovoz-DYN")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-kolovoz" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-kolovoz" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "Trotoar-DYN")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-trotoar" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-trotoar" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "Biciklisticka-DYN")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-biciklisticka" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-biciklisticka" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "Parking-DYN")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-parking" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-parking" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (tblsearch "BLOCK" "Zelenilo-DYN")
+    (progn
+      (if (equal currentRow 1)
+        (progn
+          (InsertBlock "PP-Legenda-zelenilo" "02-Legenda" firstRowX currentY scale "0")
+          (setq currentRow 2)
+        )
+        (progn
+          (InsertBlock "PP-Legenda-zelenilo" "02-Legenda" secondRowX currentY scale "0")
+          (setq currentY (+ currentY stepY))
+          (setq currentRow 1)
+        )
+      )
+    )
+  )
+  (if (equal currentRow 1)
+    (progn
+      (setq currentY (+ currentY (* 0.25 scale)))
+      (WriteDText "Poprecni profil" "BL" (strcat (rtos firstRowX 2) "," (rtos currentY 2)) (* 0.25 scale) "0" "САОБРАЋАЈ" "02-Legenda")
+      (setq currentY (+ currentY stepY))
+    )
+    (progn
+      (setq currentY (+ currentY stepY))
+      (setq currentY (+ currentY (* 0.25 scale)))
+      (WriteDText "Poprecni profil" "BL" (strcat (rtos firstRowX 2) "," (rtos currentY 2)) (* 0.25 scale) "0" "САОБРАЋАЈ" "02-Legenda")
+      (setq currentY (+ currentY (* 0.75 scale)))
+      (setq currentRow 1)
+    )
+  )
+  
+  (WriteDText "Poprecni profil" "BL" (strcat (rtos firstRowX 2) "," (rtos currentY 2)) (* 0.3 scale) "0" "ЛЕГЕНДА" "02-Legenda")
+  
 )
 
 (defun SaveFile()
@@ -1070,6 +1333,8 @@
         (DrawFrame)
         (WriteText)
         (DrawCrossSection)
+        (GenerateLegend)
+        (ZoomAndRegen)
         (SaveFile)
     )
     (alert "Prekid komande")
