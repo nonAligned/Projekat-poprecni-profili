@@ -295,7 +295,7 @@
 )
 
 (defun AddLinDim(dimX1 dimX2 dimY posY dimStyleName layerName)
-  (command "._LAYER" "SET" layer "")
+  (command "._LAYER" "SET" layerName "")
   (SetDimStyleCurrent dimStyleName)
   (setvar "DIMSCALE" scale)
 
@@ -320,7 +320,13 @@
 (defun ImportDimStyles()
   (if (not (tblsearch "DIMSTYLE" "Poprecni profil"))
     (progn
-      (InsertBlock "Kote" "0" 0 0 "1" "0")
+      (InsertBlock "Kota1" "0" 0 0 "1" "0")
+      (entdel (entlast))
+    )
+  )
+  (if (not (tblsearch "DIMSTYLE" "Poprecni profil priblizno"))
+    (progn
+      (InsertBlock "Kota2" "0" 0 0 "1" "0")
       (entdel (entlast))
     )
   )
@@ -391,6 +397,45 @@
 )
 
 ; -------------------------------
+; Green Area Functions
+; -------------------------------
+
+(defun AddGreen ( / firstPoint secondPoint insertPoint greenWidth vlaObj)
+  (setvar "OSMODE" OSNAPSETTINGS)
+  
+  (setq firstPoint (car (getpoint "\nPokazite prvu tacku zelenila:")))
+  (setq secondPoint (car (getpoint "\nPokazite drugu tacku zelenila:")))
+  
+  (if (= firstPoint secondPoint)
+    (alert "Tacke moraju biti razlicite!")
+    (progn
+      (if (< firstPoint secondPoint)
+        (progn
+          (setq greenWidth (- secondPoint firstPoint))
+          (setq insertPoint firstPoint)
+        )
+        (progn
+          (setq greenWidth (- firstPoint secondPoint))
+          (setq insertPoint secondPoint)
+        )
+      )
+      (InsertBlock "Zelenilo-DYN" "14-Zelena povrsina" insertPoint groundY "1" "0")
+      (setq vlaObj (vlax-ename->vla-object (entlast)))
+
+      (SetDynPropValue vlaObj "sirina" greenWidth)
+      (SetDynPropValue vlaObj "razmera" (* scale 100))
+        
+      (vla-update vlaObj)
+      
+      (vlax-release-object vlaObj)
+      
+      (SetDimStyleCurrent "Poprecni profil priblizno")
+      (AddTrafficDims insertPoint (+ insertPoint greenWidth) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil priblizno" 4)
+    )
+  )
+)
+
+; -------------------------------
 ; Parking Functions
 ; -------------------------------
 
@@ -423,7 +468,7 @@
       (vla-update vlaObj)
       
       (vlax-release-object vlaObj)
-
+      (SetDimStyleCurrent "Poprecni profil")
       (cond
         ((equal parkingSide 0)
           (AddTrafficDims insertPoint (+ insertPoint (atof parkingWidth)) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil" 4)
@@ -467,6 +512,7 @@
           
           (vlax-release-object vlaObj)
 
+          (SetDimStyleCurrent "Poprecni profil")
           (AddTrafficDims insertPoint (+ insertPoint (atof bikepathWidth)) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil" 4)
         )
       )     
@@ -499,7 +545,8 @@
   (vla-update vlaObj)
   
   (vlax-release-object vlaObj)
-
+  
+  (SetDimStyleCurrent "Poprecni profil")
   (AddTrafficDims insertPoint (+ insertPoint sidewalkWidth) (- upperDimsY (* dimSpacing 3.0)) "Poprecni profil" 4)
 )
 
@@ -516,7 +563,8 @@
       (vla-update vlaObj)
       
       (vlax-release-object vlaObj)
-
+      
+      (SetDimStyleCurrent "Poprecni profil")
       (AddTrafficDims leftX (+ leftX widthLeft) (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
     )
   )
@@ -533,7 +581,8 @@
       (vla-update vlaObj)
       
       (vlax-release-object vlaObj)
-
+      
+      (SetDimStyleCurrent "Poprecni profil")
       (AddTrafficDims (- rightX widthRight) rightX (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
     )
   )
@@ -594,7 +643,8 @@
   (vla-update vlaObj)
   
   (vlax-release-object vlaObj)
-
+  
+  (SetDimStyleCurrent "Poprecni profil")
   (AddTrafficDims firstPoint secondPoint (- upperDimsY (* dimSpacing 3.0)) "Popercni profil")
 )
 
@@ -610,7 +660,8 @@
   (vla-update vlaObj)
   
   (vlax-release-object vlaObj)
-
+  
+  (SetDimStyleCurrent "Poprecni profil")
   (AddTrafficDims (- axisX widthLeft) (+ axisX widthRight) (- upperDimsY (* dimSpacing 3.0)) "Popercni profil" 4)
   (AddTrafficDims (- axisX widthLeft) (+ axisX widthRight) (- upperDimsY (* dimSpacing 2.0)) "Poprecni profil" 3)
 )
@@ -666,7 +717,7 @@
         (AddParking)
       )
       ((equal elementType "green")
-        ;(AddGreen)
+        (AddGreen)
       )
     )
   )
