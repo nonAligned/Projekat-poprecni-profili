@@ -1001,7 +1001,7 @@
   (setq axisPointFirst (strcat (rtos (* 21.0 scale) 2) "," (rtos (* 14.5 scale) 2)))
   (setq axisPointSecond (strcat (rtos (* 28.7 scale) 2) "," (rtos (* 13.5 scale) 2)))
   
-  (WriteDText "Poprecni profil" "BL" bottomLeft (* 0.25 scale) 0 (GenerateId) "01-Tekst")
+  (WriteDText "Poprecni profil" "BL" bottomLeft (* 0.25 scale) 0 drawingId "01-Tekst")
   (WriteDText "Poprecni profil" "TL" topLeft (* 0.25 scale) 0 "ЈП \"Урбанизам\" Завод за урбанизам, 21 000 Нови Сад, Бул. цара Лазара бр.3/III" "01-Tekst")
   (WriteMText "Poprecni profil" "TC" titleFirst titleSecond (* 0.5 scale) "КАРАКТЕРИСТИЧНИ ПОПРЕЧНИ ПРОФИЛ" "01-Tekst")
   (WriteMText "Poprecni profil" "TC" subtitleFirst subtitleSecond (* 0.35 scale) (strcat "Улица " streetName " " (rtos width 2 1) " m") "01-Tekst")
@@ -1033,11 +1033,18 @@
   (AddUtilityElements)
 )
 
+(defun SaveFile()
+  (command "._SAVEAS" 
+  "2018"
+  (strcat "D:\\Programiranje\\AutoCAD\\Projekat poprecni profili\\saved\\" drawingId "-" axisPoint1 "_" axisPoint2 "-" streetName ".dwg")
+  )
+)
+
 ; -------------------------------
 ; Cross Section Type 2 Entry Point
 ; -------------------------------
 
-(defun NewCsType2(/ streetName streetOrientation axisDistanceLeft axisDistanceRight axisPoint1 axisPoint2 scale width)
+(defun NewCsType2(/ drawingId streetName streetOrientation axisDistanceLeft axisDistanceRight axisPoint1 axisPoint2 scale width)
   (LoadDialog "newcstype2")
   
   (setq width (+ (atof axisDistanceLeft) (atof axisDistanceRight)))
@@ -1055,10 +1062,12 @@
     (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 54 metra.") (exit)))
   )
   
+  (setq drawingId (GenerateId))
   (ImportInitialStyles)
   (DrawFrame)
   (WriteText)
   (DrawCrossSection)
+  (SaveFile)
   
 )
 
