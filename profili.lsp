@@ -39,6 +39,14 @@
               (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
               (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
             )
+            ((equal dialogName "newutilityelement")
+              (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
+              (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
+            )
+            ((equal dialogName "newundergroundutils")
+              (action_tile "accept" "(setq utilityType \"0\")(done_dialog 1)")
+              (action_tile "cancel" "(setq utilityType \"0\")(done_dialog 0)") 
+            )
           )
           
 	        (start_dialog)
@@ -197,7 +205,7 @@
 )
 
 (defun InsertBlock(blockName layerName iX iY blockScale blockRotation)
-  (command "._LAYER" "SET" layerName "")
+  (if (not (tblsearch "LAYER" layerName)) (command "._LAYER" "SET" "0" "")(command "._LAYER" "SET" layerName ""))
   (if (not (tblsearch "BLOCK" blockName))
     (progn
       (command 
@@ -405,6 +413,8 @@
   
   (setq firstPoint (car (getpoint "\nPokazite prvu tacku zelenila:")))
   (setq secondPoint (car (getpoint "\nPokazite drugu tacku zelenila:")))
+  
+  (setvar "OSMODE" 0)
   
   (if (= firstPoint secondPoint)
     (alert "Tacke moraju biti razlicite!")
@@ -724,6 +734,137 @@
 )
 
 ; -------------------------------
+; Underground Utilities Functions
+; -------------------------------
+
+(defun AddUndergroundUtility(blockName positionX / isPointFree vlaObj)
+  (setq isPointFree 1)
+  
+  (foreach point lowerDimsLeftList 
+    (if (equal point positionX 0.1)
+      (setq isPointFree nil)
+    )
+  )
+  
+  (foreach point lowerDimsRightList
+    (if (equal point positionX 0.1)
+      (setq isPointFree nil)
+    )
+  )
+  
+  (if isPointFree
+    (progn
+      (InsertBlock blockName "20-Instalacije" positionX groundY "1" "0")
+  
+      (setq vlaObj (vlax-ename->vla-object (entlast)))
+      
+      (SetDynPropValue vlaObj "rastojanjeopisa" (* 6.5 scale))
+      (SetDynPropValue vlaObj "razmera" (* scale 100))
+      
+      (vla-update vlaObj)
+      
+      (vlax-release-object vlaObj)
+      
+      (cond
+        ((< positionX axisX)
+          (setq lowerDimsLeftList (append lowerDimsLeftList (list positionX)))
+        )
+        ((> positionX axisX)
+          (setq lowerDimsRightList (append lowerDimsRightList (list positionX))) 
+        )
+      )
+    )
+    (alert "Na pokazanom mestu vec postoji instalacija")
+  )
+)
+
+(defun AddSingleUtility( / utilityName insertPoint)
+  (LoadDialog "newsingleutility")
+  
+  (if utilityName
+    (progn
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (setq insertPoint (car (getpoint "\nPokazite poziciju nove instalacije:")))
+      (setvar "OSMODE" 0)
+
+      (if insertPoint
+        (if (or (member insertPoint lowerDimsLeftList)(member insertPoint lowerDimsRightList))
+          (alert "Na selektovanoj poziciji vec postoji instalacija")
+          (progn
+            (AddUndergroundUtility utilityName insertPoint)
+          )
+        )
+      )
+    )  
+  )
+)
+
+(defun AddUtilitySet(position)
+  (cond
+    ((equal position "left")
+      (AddUndergroundUtility "PP-Instalacije-elektro" (+ leftX 0.5))
+      (AddUndergroundUtility "PP-Instalacije-gas" (+ leftX 1.25))
+      (AddUndergroundUtility "PP-Instalacije-vodovod" (+ leftX 2.0))
+      (AddUndergroundUtility "PP-Instalacije-telekom" (+ leftX 2.75))
+    )
+    ((equal position "right")
+      (AddUndergroundUtility "PP-Instalacije-elektro" (- rightX 0.5))
+      (AddUndergroundUtility "PP-Instalacije-gas" (- rightX 1.25))
+      (AddUndergroundUtility "PP-Instalacije-vodovod" (- rightX 2.0))
+      (AddUndergroundUtility "PP-Instalacije-telekom" (- rightX 2.75))
+    )
+  )
+)
+
+(defun AddUndergroundUtilities( / utilityType)
+  (setq utilityType "1")
+  
+  (while (not (equal utilityType "0"))
+    (LoadDialog "newundergroundutils")
+    (cond
+      ((equal utilityType "full-left")
+        (if (> (- axisX leftX) 2.75)
+          (AddUtilitySet "left")
+          (alert "Nema dovoljno prostora za standardno postavljanje")
+        )
+      )
+      ((equal utilityType "full-right")
+        (if (> (- axisX leftX) 2.75)
+          (AddUtilitySet "right")
+          (alert "Nema dovoljno prostora za standardno postavljanje")
+        )
+      )
+      ((equal utilityType "single-util")
+        (AddSingleUtility)
+      )
+    )
+  )
+)
+
+; -------------------------------
+; Main Utility Elements Function
+; -------------------------------
+
+(defun AddUtilityElements( / elementType)
+  (setq elementType "1")
+  
+  (while (not (equal elementType "0"))
+    (LoadDialog "newutilityelement")
+    (cond
+      ((equal elementType "underground")
+        (AddUndergroundUtilities)
+      )
+      ((equal elementType "public-lighting")
+        ;(AddPublicLighting)
+      )
+      ((equal elementType "treeline")
+        ;(AddTreeline)
+      )
+    )
+  )
+)
+
+; -------------------------------
 ; Cross Section Type 2 Main Workflow
 ; -------------------------------
 
@@ -807,6 +948,7 @@
   (ZoomAndRegen)
   
   (AddTrafficElements)
+  (AddUtilityElements)
 )
 
 ; -------------------------------

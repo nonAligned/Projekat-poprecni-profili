@@ -254,3 +254,98 @@ newparking: dialog {
   ok_cancel;
   errtile;
 }
+
+newutilityelement: dialog {
+  label = "Dodavanje infrastrukture";
+  : boxed_column {
+    : button { 
+      label = "Dodaj podzemne instalacije";
+      key = "undeground";
+      action = "(setq elementType \"underground\")(done_dialog 1)";
+    }
+    : button { 
+      label = "Dodaj javnu rasvetu";
+      key = "public-lighting";
+      action = "(setq elementType \"public-lighting\")(done_dialog 1)";     
+    }
+    : button { 
+      label = "Dodaj drvored";
+      key = "treeline";
+      action = "(setq elementType \"treeline\")(done_dialog 1)";
+    }
+  }
+
+  spacer;
+
+  ok_cancel;
+}
+
+newundergroundutils: dialog {
+  label = "Dodavanje podzemnih instalacija";
+  : boxed_column {
+    : button { 
+      label = "Sve uz levu regulaciju";
+      key = "full-left";
+      action = "(setq utilityType \"full-left\")(done_dialog 1)";
+    }
+    : button { 
+      label = "Sve uz desnu regulaciju";
+      key = "full-right";
+      action = "(setq utilityType \"full-right\")(done_dialog 1)";     
+    }
+    : button { 
+      label = "Dodaj pojedinacno";
+      key = "single-util";
+      action = "(setq utilityType \"single-util\")(done_dialog 1)";
+    }
+  }
+
+  spacer;
+
+  ok_cancel;
+}
+
+newsingleutility: dialog {
+  label = "Dodaj pojedinacnu instalaciju";
+  : boxed_column {
+    :button { 
+      key = "electric";
+      label = "Elektrovod";
+      action = "(setq utilityName \"PP-Instalacije-elektro\")(done_dialog 1)";
+    }
+    :button { 
+      key = "gas";
+      label = "Gasovod";
+      action = "(setq utilityName \"PP-Instalacije-gas\")(done_dialog 1)";
+    }
+    :button { 
+      key = "water";
+      label = "Vodovod";
+      action = "(setq utilityName \"PP-Instalacije-vodovod\")(done_dialog 1)";
+    }
+    :button { 
+      key = "telecom";
+      label = "Telekom";
+      action = "(setq utilityName \"PP-Instalacije-telekom\")(done_dialog 1)";
+    }
+    :button { 
+      key = "sewageSanitary";
+      label = "Kanalizacija fekalna";
+      action = "(setq utilityName \"PP-Instalacije-kanalizacija-fekalna\")(done_dialog 1)";
+
+    }
+    :button { 
+      key = "sewageStormwater";
+      label = "Kanalizacija atmosferska";
+      action = "(setq utilityName \"PP-Instalacije-kanalizacija-atmosferska\")(done_dialog 1)";
+
+    }
+    :button { 
+      key = "sewageCombined";
+      label = "Kanalizacija zajednicka";
+      action = "(setq utilityName \"PP-Instalacije-kanalizacija-zajednicka\")(done_dialog 1)";
+    }
+  }
+  spacer;
+  ok_cancel;
+}
