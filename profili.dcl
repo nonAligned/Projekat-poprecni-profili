@@ -16,6 +16,17 @@ newcrosssection: dialog {
   }
 
   ok_cancel;
+
+  : column {
+    children_alignment = centered;
+    children_fixed_width = 10;
+    : text {
+      value = "Poprecni profili v0.1";
+    }
+    : text {
+      value = "\U+00A9 Momcilo";
+    }  
+  }
 }
 
 newcstype2: dialog {
