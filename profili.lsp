@@ -1411,7 +1411,7 @@
     (setq fileName (vl-string-subst "" "\"" fileName))
   )
   
-  (setq savePath (strcat "D:\\Programiranje\\" (getvar "USERNAME") "\\"))
+  (setq savePath (strcat "D:\\Programiranje\\AutoCAD\\" (getvar "USERNAME") "\\"))
   (acet-file-mkdir savePath)
   
   (command "._SAVEAS" 
@@ -1511,7 +1511,7 @@
   
   (if (and userClick streetName (not (equal streetName "")))
     (progn
-      (setq foundList (acet-file-dir (strcat "*" streetName "*.dwg") "D:\\Programiranje"))
+      (setq foundList (acet-file-dir (strcat "*" streetName "*.dwg") "D:\\Programiranje\\AutoCAD\\"))
       (foreach result foundList
         (setq resultsList (cons (vl-filename-base result) resultsList))
       )
