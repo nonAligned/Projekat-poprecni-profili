@@ -6,12 +6,14 @@
   (if (not (setq dclId (load_dialog (findfile "profili.dcl"))))
     (progn
       (alert "DCL fajl nije pronadjen.")
+      (setvar "OSMODE" OSNAPSETTINGS)
       (exit)
     )
     (progn
       (if (not (new_dialog dialogName dclId))
         (progn
           (alert "U ucitanom fajlu nema trazene definicije")
+          (setvar "OSMODE" OSNAPSETTINGS)
           (exit)
         )
         (progn
@@ -38,15 +40,27 @@
             )
             ((equal dialogName "newtrafficelement")
               (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
-              (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
+              (action_tile "cancel" "(setq dialogCancelled 1)(done_dialog 0)") 
             )
             ((equal dialogName "newutilityelement")
               (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
-              (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)") 
+              (action_tile "cancel" "(setq dialogCancelled 1)(done_dialog 0)")
             )
             ((equal dialogName "newundergroundutils")
               (action_tile "accept" "(setq utilityType \"0\")(done_dialog 1)")
               (action_tile "cancel" "(setq utilityType \"0\")(done_dialog 0)") 
+            )
+            ((equal dialogName "searchcs")
+              (action_tile "accept" "(setq userClick T)(done_dialog 1)")
+              (action_tile "cancel" "(setq userClick nil)(done_dialog 0)")
+            )
+            ((equal dialogName "searchcsresults")
+              (start_list "search-results") 
+              (mapcar 'add_list resultsList)
+              (end_list)
+              (set_tile "search-results" "0")
+              (action_tile "accept" "(setq chosenCS (atof (get_tile \"search-results\")))(setq userClick T)(done_dialog 1)")
+              (action_tile "cancel" "(setq userClick nil)(done_dialog 0)")
             )
           )
           
@@ -301,7 +315,7 @@
   (command "._CELTSCALE" (rtos lineScale 2))
   (command "._PLINE" 
     firstPoint
-    "WIDTH" (strcat (rtos lineWidth 2)) (strcat (rtos lineWidth 2))
+    "WIDTH" (rtos lineWidth 2) (rtos lineWidth 2)
     secondPoint
     ""
   )
@@ -393,9 +407,9 @@
   (strcat (strcase (substr (getvar "USERNAME") 1 2)) "_" (substr (car cdate) 3) (cadr cdate) "_" (substr (rtos (getvar "MILLISECS") 2 0) 2 4))
 )
 
-(defun DrawGround(leftX rightX y / leftEndpoint rightEndpoint)
-  (setq leftEndpoint (strcat (rtos leftX 2) "," (rtos y 2)))
-  (setq rightEndpoint (strcat (rtos rightX 2) "," (rtos y 2)))
+(defun DrawGround(firstX secondX yPos / leftEndpoint rightEndpoint)
+  (setq leftEndpoint (strcat (rtos firstX 2) "," (rtos yPos 2)))
+  (setq rightEndpoint (strcat (rtos secondX 2) "," (rtos yPos 2)))
   (DrawPline leftEndpoint rightEndpoint (* 0.05 scale) 1 "03-Tlo")
 )
 
@@ -783,10 +797,11 @@
 ; Main Traffic Elements Function
 ; -------------------------------
 
-(defun AddTrafficElements( / elementType)
+(defun AddTrafficElements( / dialogCancelled elementType)
   (setq elementType "1")
+  (setq dialogCancelled 0)
   
-  (while (not (equal elementType "0"))
+  (while (and (not (equal elementType "0")) (equal dialogCancelled 0))
     (LoadDialog "newtrafficelement")
     (cond
       ((equal elementType "roadway")
@@ -809,6 +824,13 @@
         (AddGreen)
         (ZoomAndRegen)
       )
+    )
+  )
+  
+  (if (equal dialogCancelled 1)
+    (progn
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (exit)
     )
   )
 )
@@ -969,10 +991,11 @@
   )
 )
 
-(defun AddUtilityElements( / elementType)
+(defun AddUtilityElements( / dialogCancelled elementType)
   (setq elementType "1")
+  (setq dialogCancelled 0)
   
-  (while (not (equal elementType "0"))
+  (while (and (not (equal elementType "0")) (equal dialogCancelled 0))
     (LoadDialog "newutilityelement")
     (cond
       ((equal elementType "underground")
@@ -987,6 +1010,13 @@
         (AddPublicLightingOrTreeline "PP-Drvored" "22-Drvored")
         (ZoomAndRegen)
       )
+    )
+  )
+  
+  (if (equal dialogCancelled 1)
+    (progn
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (exit)
     )
   )
   
@@ -1065,9 +1095,11 @@
   (setq axisX (+ leftX (atof axisDistanceLeft)))
   (setq upperDimsY (+ groundY (* 8.5 scale)))
   (setq lowerDimsY (- groundY (* 5.5 scale)))
-  (setq dimSpacing (* (getvar 'DIMDLI) scale))
-  
-  
+  (setq dimSpacing (* (getvar "DIMDLI") scale))
+  (setq lowerDimsLeftList nil)
+  (setq lowerDimsRightList nil)
+
+  ;EVERYTHING IS FINE UP UNTIL THIS FUNCTION CALL
   (DrawGround leftX rightX groundY)
   (DrawAxis lowerMaxY upperMaxY axisX)
   (DrawRegLines leftX rightX lowerMaxY groundY upperMaxY)
@@ -1343,7 +1375,7 @@
   
 )
 
-(defun SaveFile( / fileName)
+(defun SaveFile( / fileName savePath)
   (setq fileName (strcat drawingId "-" axisPoint1 "_" axisPoint2 "-" (ConvertCyrillicToLatin streetName)))
   (while (vl-string-search "/" fileName)
     (setq fileName (vl-string-subst "" "/" fileName))
@@ -1378,13 +1410,14 @@
   (while (vl-string-search "\"" fileName)
     (setq fileName (vl-string-subst "" "\"" fileName))
   )
-
+  
+  (setq savePath (strcat "D:\\Programiranje\\" (getvar "USERNAME") "\\"))
+  (acet-file-mkdir savePath)
   
   (command "._SAVEAS" 
   "2018"
-  (strcat "D:\\Programiranje\\AutoCAD\\Projekat poprecni profili\\saved\\" fileName ".dwg")
+  (strcat savePath fileName ".dwg")
   )
-  
 )
 
 ; -------------------------------
@@ -1407,7 +1440,7 @@
         (cond
           ((<= width 18.0) (setq scale 1.0))
           ((<= width 36.0) (setq scale 2.0))
-          (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 36 metra.") (exit)))
+          (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 36 metra.")(setvar "OSMODE" OSNAPSETTINGS) (exit)))
         )
         
         (setq drawingId (GenerateId))
@@ -1427,8 +1460,8 @@
 ; MAIN ENTRY POINT
 ; -------------------------------
 
-(defun c:NewCrossSection ( / csType blockDefinitionFile)
-  (setvar "CMDECHO" 0)
+(defun c:CreateCrossSection ( / csType blockDefinitionFile)
+  ;(setq CMDECHOSETTING (getvar "CMDECHO"))(setvar "CMDECHO" 0)
   (vl-load-com)
   
   (Cleanup "full")
@@ -1462,7 +1495,43 @@
   
   (setvar "OSMODE" OSNAPSETTINGS)
   
-  (setvar "CMDECHO" 1)
+  ;(setvar "CMDECHO" CMDECHOSETTING)
   
   (princ) ; Suppress return of extraneous results
 )
+
+; -------------------------------
+; SEARCH FUNCTION
+; -------------------------------
+
+(defun c:SearchCrossSections( / streetName foundList resultsList chosenCS userClick)
+  ;(setq CMDECHOSETTING (getvar "CMDECHO"))(setvar "CMDECHO" 0)
+  (vl-load-com)
+  (LoadDialog "searchcs")
+  
+  (if (and userClick streetName (not (equal streetName "")))
+    (progn
+      (setq foundList (acet-file-dir (strcat "*" streetName "*.dwg") "D:\\Programiranje"))
+      (foreach result foundList
+        (setq resultsList (cons (vl-filename-base result) resultsList))
+      )
+      (if (> (length resultsList) 0)
+        (progn
+          (LoadDialog "searchcsresults")
+          (if userClick
+            (progn
+              (setq chosenCS (fix chosenCS))
+              (setq chosenCS (nth chosenCS resultsList))
+              (alert (strcat "Selektovali ste: " chosenCS))			
+            )
+          )
+        )
+        (alert "Nije pronadjen nijedan profil")
+      )
+    )
+  )
+  
+  ;(setvar "CMDECHO" CMDECHOSETTING)
+)
+
+(princ "\nProfili.lsp loaded successfully.")

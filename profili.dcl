@@ -24,7 +24,7 @@ newcrosssection: dialog {
       value = "Poprecni profili v0.1";
     }
     : text {
-      value = "\U+00A9 Momcilo";
+      value = "\U+00A9 NS Urbanizam";
     }  
   }
 }
@@ -358,5 +358,30 @@ newsingleutility: dialog {
     }
   }
   spacer;
+  ok_cancel;
+}
+
+searchcs: dialog {
+  label = "Pretrazi profile";
+  : column {
+    : edit_box { 
+      label = "Ime ulice";
+      key = "street-name";
+      action = "(setq streetName $value)";
+    }
+  }
+
+  ok_cancel;
+}
+
+searchcsresults: dialog {
+  label = "Rezultati pretrage";
+  width = 60;
+  : column {
+    : list_box {
+      key = "search-results";
+    }
+  }
+
   ok_cancel;
 }
