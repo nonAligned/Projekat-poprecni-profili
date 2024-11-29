@@ -7,6 +7,7 @@
     (progn
       (alert "DCL fajl nije pronadjen.")
       (setvar "OSMODE" OSNAPSETTINGS)
+      (setvar "CMDECHO" CMDECHOSETTING)
       (exit)
     )
     (progn
@@ -14,6 +15,7 @@
         (progn
           (alert "U ucitanom fajlu nema trazene definicije")
           (setvar "OSMODE" OSNAPSETTINGS)
+          (setvar "CMDECHO" CMDECHOSETTING)
           (exit)
         )
         (progn
@@ -830,6 +832,7 @@
   (if (equal dialogCancelled 1)
     (progn
       (setvar "OSMODE" OSNAPSETTINGS)
+      (setvar "CMDECHO" CMDECHOSETTING)
       (exit)
     )
   )
@@ -1016,6 +1019,7 @@
   (if (equal dialogCancelled 1)
     (progn
       (setvar "OSMODE" OSNAPSETTINGS)
+      (setvar "CMDECHO" CMDECHOSETTING)
       (exit)
     )
   )
@@ -1440,7 +1444,7 @@
         (cond
           ((<= width 18.0) (setq scale 1.0))
           ((<= width 36.0) (setq scale 2.0))
-          (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 36 metra.")(setvar "OSMODE" OSNAPSETTINGS) (exit)))
+          (t (progn (alert "Trenutno nije moguće iscrtavanje ulice šire od 36 metra.")(setvar "OSMODE" OSNAPSETTINGS)(setvar "CMDECHO" CMDECHOSETTING)(exit)))
         )
         
         (setq drawingId (GenerateId))
@@ -1461,7 +1465,8 @@
 ; -------------------------------
 
 (defun c:CreateCrossSection ( / csType blockDefinitionFile)
-  ;(setq CMDECHOSETTING (getvar "CMDECHO"))(setvar "CMDECHO" 0)
+  (setq CMDECHOSETTING (getvar "CMDECHO"))(setvar "CMDECHO" 0)
+  (setq OSNAPSETTINGS (getvar "OSMODE"))
   (vl-load-com)
   
   (Cleanup "full")
@@ -1476,7 +1481,6 @@
     )
   )
   
-  (setq OSNAPSETTINGS (getvar "OSMODE"))
   (setvar "OSMODE" 0)
   
   (LoadDialog "newcrosssection")
@@ -1495,7 +1499,7 @@
   
   (setvar "OSMODE" OSNAPSETTINGS)
   
-  ;(setvar "CMDECHO" CMDECHOSETTING)
+  (setvar "CMDECHO" CMDECHOSETTING)
   
   (princ) ; Suppress return of extraneous results
 )
@@ -1505,7 +1509,7 @@
 ; -------------------------------
 
 (defun c:SearchCrossSections( / streetName foundList resultsList chosenCS userClick)
-  ;(setq CMDECHOSETTING (getvar "CMDECHO"))(setvar "CMDECHO" 0)
+  (setq CMDECHOSETTING (getvar "CMDECHO"))(setvar "CMDECHO" 0)
   (vl-load-com)
   (LoadDialog "searchcs")
   
@@ -1531,7 +1535,7 @@
     )
   )
   
-  ;(setvar "CMDECHO" CMDECHOSETTING)
+  (setvar "CMDECHO" CMDECHOSETTING)
 )
 
 (princ "\nProfili.lsp loaded successfully.")
