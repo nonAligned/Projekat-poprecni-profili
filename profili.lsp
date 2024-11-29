@@ -1419,7 +1419,7 @@
   (acet-file-mkdir savePath)
   
   (command "._SAVEAS" 
-  "2018"
+  "2004"
   (strcat savePath fileName ".dwg")
   )
 )
@@ -1508,6 +1508,21 @@
 ; SEARCH FUNCTION
 ; -------------------------------
 
+(defun OpenDrawing ( target / rtn shl )
+    (if (and (or (= 'int (type target)) (setq target (findfile target)))
+             (setq shl (vla-getinterfaceobject (vlax-get-acad-object) "shell.application"))
+        )
+        (progn
+            (setq rtn (vl-catch-all-apply 'vlax-invoke (list shl 'open target)))
+            (vlax-release-object shl)
+            (if (vl-catch-all-error-p rtn)
+                (prompt (vl-catch-all-error-message rtn))
+                t
+            )
+        )
+    )
+)
+
 (defun c:SearchCrossSections( / streetName foundList resultsList chosenCS userClick)
   (setq CMDECHOSETTING (getvar "CMDECHO"))(setvar "CMDECHO" 0)
   (vl-load-com)
@@ -1525,8 +1540,8 @@
           (if userClick
             (progn
               (setq chosenCS (fix chosenCS))
-              (setq chosenCS (nth chosenCS resultsList))
-              (alert (strcat "Selektovali ste: " chosenCS))			
+              (setq chosenCS (nth chosenCS foundList))
+              (OpenDrawing chosenCS)
             )
           )
         )
