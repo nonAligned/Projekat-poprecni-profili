@@ -1039,26 +1039,32 @@
   (AddUtilityDims)
 )
 
-(defun AddVehicles( / userClick insertPoint vehiclesList chosenVehicle)
-  (setq vehiclesList
-    (list
-      "2007 Saab 9-5 - Front view" "2007 Saab 9-5 - Side view" "2007 Saab 9-5 - Rear view"
-      "2004 Saab 9-3 Cabrio - Front view" "2004 Saab 9-3 Cabrio - Side view" "2004 Saab 9-3 Cabrio - Rear view"
-      "2002 Volvo XC70 - Front view" "2002 Volvo XC70 - Side view" "2002 Volvo XC70 - Rear view"
-    )
-  )
-  
-  (LoadDialog "addvehicles")
-  
-  (if userClick
+(defun AddVehicles( / carsFile line userClick insertPoint vehiclesList chosenVehicle)
+  (if (findfile "automobili.txt")
     (progn
-      (setq chosenVehicle (fix chosenVehicle))
-      (setq chosenVehicle (nth chosenVehicle vehiclesList))
-      (setvar "OSMODE" OSNAPSETTINGS)
-      (setq insertPoint (getpoint "\nPokazite tacku insertovanja vozila:"))
-      (setvar "OSMODE" 0)
-      (if insertPoint
-        (InsertBlock chosenVehicle "40-Vozila" (car insertPoint) (cadr insertPoint) "1" "0")
+      (setq carsFile (open (findfile "automobili.txt") "r"))
+      
+      (while (setq line (read-line carsFile))
+        (setq vehiclesList (cons line vehiclesList))
+      )
+      
+      (setq vehiclesList (reverse vehiclesList))
+      
+      (LoadDialog "addvehicles")
+      
+      (close carsFile)
+      
+      (if userClick
+        (progn
+          (setq chosenVehicle (fix chosenVehicle))
+          (setq chosenVehicle (nth chosenVehicle vehiclesList))
+          (setvar "OSMODE" OSNAPSETTINGS)
+          (setq insertPoint (getpoint "\nPokazite tacku insertovanja vozila:"))
+          (setvar "OSMODE" 0)
+          (if insertPoint
+            (InsertBlock chosenVehicle "40-Vozila" (car insertPoint) (cadr insertPoint) "1" "0")
+          )
+        )
       )
     )
   )
