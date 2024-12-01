@@ -361,6 +361,43 @@ newsingleutility: dialog {
   ok_cancel;
 }
 
+addvehiclesandpeople: dialog {
+  label = "Dodavanje ostalog sadrzaja";
+  : boxed_column {
+    : button { 
+      label = "Vozila";
+      key = "vehicles";
+      action = "(setq elementType \"vehicles\")(done_dialog 1)";
+    }
+    : button { 
+      label = "Pesaci";
+      key = "pedestrians";
+      action = "(setq elementType \"pedestrians\")(done_dialog 1)";     
+    }
+    : button { 
+      label = "Biciklisti";
+      key = "cyclists";
+      action = "(setq elementType \"cyclists\")(done_dialog 1)";
+    }
+  }
+
+  spacer;
+
+  ok_cancel;
+}
+
+addvehicles: dialog {
+  label = "Dodavanje ostalog sadrzaja";
+  width = 60;
+  : column {
+    : list_box {
+      key = "vehicles-list";
+    }
+  }
+
+  ok_cancel;
+}
+
 searchcs: dialog {
   label = "Pretrazi profile";
   : column {

@@ -52,6 +52,18 @@
               (action_tile "accept" "(setq utilityType \"0\")(done_dialog 1)")
               (action_tile "cancel" "(setq utilityType \"0\")(done_dialog 0)") 
             )
+            ((equal dialogName "addvehiclesandpeople")
+              (action_tile "accept" "(setq elementType \"0\")(done_dialog 1)")
+              (action_tile "cancel" "(setq elementType \"0\")(done_dialog 0)")
+            )
+            ((equal dialogName "addvehicles")
+              (start_list "vehicles-list") 
+              (mapcar 'add_list vehiclesList)
+              (end_list)
+              (set_tile "vehicles-list" "0")
+              (action_tile "accept" "(setq chosenVehicle (atof (get_tile \"vehicles-list\")))(setq userClick T)(done_dialog 1)")
+              (action_tile "cancel" "(setq userClick nil)(done_dialog 0)")
+            )
             ((equal dialogName "searchcs")
               (action_tile "accept" "(setq userClick T)(done_dialog 1)")
               (action_tile "cancel" "(setq userClick nil)(done_dialog 0)")
@@ -1027,6 +1039,50 @@
   (AddUtilityDims)
 )
 
+(defun AddVehicles( / userClick insertPoint vehiclesList chosenVehicle)
+  (setq vehiclesList
+    (list
+      "2007 Saab 9-5 - Front view" "2007 Saab 9-5 - Side view" "2007 Saab 9-5 - Rear view"
+      "2004 Saab 9-3 Cabrio - Front view" "2004 Saab 9-3 Cabrio - Side view" "2004 Saab 9-3 Cabrio - Rear view"
+      "2002 Volvo XC70 - Front view" "2002 Volvo XC70 - Side view" "2002 Volvo XC70 - Rear view"
+    )
+  )
+  
+  (LoadDialog "addvehicles")
+  
+  (if userClick
+    (progn
+      (setq chosenVehicle (fix chosenVehicle))
+      (setq chosenVehicle (nth chosenVehicle vehiclesList))
+      (setvar "OSMODE" OSNAPSETTINGS)
+      (setq insertPoint (getpoint "\nPokazite tacku insertovanja vozila:"))
+      (setvar "OSMODE" 0)
+      (if insertPoint
+        (InsertBlock chosenVehicle "40-Vozila" (car insertPoint) (cadr insertPoint) "1" "0")
+      )
+    )
+  )
+)
+
+(defun AddCarsAndPeople( / elementType)
+  (while (not (equal elementType "0"))
+    (setq elementType "1")
+    (LoadDialog "addvehiclesandpeople")
+    (cond
+      ((equal elementType "vehicles")
+        (AddVehicles)
+        (ZoomAndRegen)
+      )
+      ((equal elementType "pedestrians")
+        (ZoomAndRegen)
+      )
+      ((equal elementType "cyclists")
+        (ZoomAndRegen)
+      )
+    )
+  )
+)
+
 ; -------------------------------
 ; Cross Section Type 2 Main Workflow
 ; -------------------------------
@@ -1056,6 +1112,10 @@
   (MakeLayer "30-Kote saobracaj" "7" "Continuous")
   (MakeLayer "31-Kote instalacije" "7" "Continuous")
   (MakeLayer "32-Pomocna linija" "7" "DASHED2")
+  
+  (MakeLayer "40-Vozila" "7" "Continuous")
+  (MakeLayer "41-Pesaci" "7" "Continuous")
+  (MakeLayer "42-Biciklisti" "7" "Continuous")
 
   (ImportDimStyles)
 )
@@ -1103,7 +1163,6 @@
   (setq lowerDimsLeftList nil)
   (setq lowerDimsRightList nil)
 
-  ;EVERYTHING IS FINE UP UNTIL THIS FUNCTION CALL
   (DrawGround leftX rightX groundY)
   (DrawAxis lowerMaxY upperMaxY axisX)
   (DrawRegLines leftX rightX lowerMaxY groundY upperMaxY)
@@ -1114,6 +1173,7 @@
   
   (AddTrafficElements)
   (AddUtilityElements)
+  (AddCarsAndPeople)
   
   (Cleanup "purge")
   
